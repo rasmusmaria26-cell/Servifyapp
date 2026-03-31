@@ -9,16 +9,14 @@ import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.serializer.KotlinXSerializer
 import kotlinx.serialization.json.Json
+import com.servify.app.BuildConfig
 
 object SupabaseClientProvider {
     
-    private const val SUPABASE_URL = "https://cfawrcxomfpfpzfndrtj.supabase.co"
-    private const val SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmYXdyY3hvbWZwZnB6Zm5kcnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3NzkwOTAsImV4cCI6MjA4MDM1NTA5MH0.M_mpoCNPOzGDHNt_uYLwtpzwnMwb6dklAyWJPZswROg"
-    
     val client: SupabaseClient by lazy {
         createSupabaseClient(
-            supabaseUrl = SUPABASE_URL,
-            supabaseKey = SUPABASE_KEY
+            supabaseUrl = BuildConfig.SUPABASE_URL,
+            supabaseKey = BuildConfig.SUPABASE_KEY
         ) {
             install(Auth)
             install(Postgrest)

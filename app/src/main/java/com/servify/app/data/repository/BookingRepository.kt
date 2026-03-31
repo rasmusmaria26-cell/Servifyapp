@@ -120,4 +120,37 @@ class BookingRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getBookingById(bookingId: String): Result<Booking> = withContext(Dispatchers.IO) {
+        try {
+            val booking = supabase.from("bookings")
+                .select(columns = io.github.jan.supabase.postgrest.query.Columns.raw("*, services(*)")) {
+                    filter {
+                        eq("id", bookingId)
+                    }
+                }
+                .decodeSingle<Booking>()
+                
+            val vendorProfile = try {
+                if (booking.vendorId != null) {
+                    supabase.from("profiles").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.data.model.ProfileDto>()
+                } else null
+            } catch(e: Exception) { 
+                null 
+            }
+            
+            val vendorDetails = try {
+                if (booking.vendorId != null) {
+                    supabase.from("vendors").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.data.model.Vendor>()
+                } else null
+            } catch(e: Exception) { 
+                null 
+            }
+
+            Result.success(booking.copy(vendorProfile = vendorProfile, vendorDetails = vendorDetails))
+        } catch (e: Exception) {
+            Log.e("BookingRepository", "Failed to fetch booking by ID", e)
+            Result.failure(e)
+        }
+    }
 }

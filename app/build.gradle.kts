@@ -16,15 +16,17 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: ""
+val supabaseKey = localProperties.getProperty("SUPABASE_KEY") ?: ""
 
 android {
     namespace = "com.servify.app"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.servify.app"
-        minSdk = 24
-        targetSdk = 36
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -35,6 +37,8 @@ android {
         }
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"$supabaseKey\"")
     }
 
     buildTypes {
@@ -112,10 +116,10 @@ dependencies {
     // Google AI (Gemini)
     implementation(libs.google.generativeai)
     
-    // Google Maps
-    implementation(libs.play.services.maps)
+    // Osmdroid (OpenStreetMap)
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    // Keep location services for fetching user's location if needed
     implementation(libs.play.services.location)
-    implementation(libs.maps.compose)
     
     // Razorpay
     implementation(libs.razorpay.checkout)

@@ -23,6 +23,8 @@ class CreateBookingUseCase @Inject constructor(
         scheduledDate: String,
         scheduledTime: String,
         address: String,
+        latitude: Double? = null,
+        longitude: Double? = null,
         vendorId: String?,
         estimatedPrice: Double?
     ): Result<Booking> {
@@ -66,6 +68,8 @@ class CreateBookingUseCase @Inject constructor(
             scheduledDate = scheduledDate,
             scheduledTime = scheduledTime,
             address = address,
+            latitude = latitude,
+            longitude = longitude,
             estimatedPrice = estimatedPrice,
             finalPrice = null,
             status = "PENDING",

@@ -3,9 +3,11 @@ package com.servify.app.presentation.customer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servify.app.data.model.Booking
+import com.servify.app.data.model.RepairRequest
 import com.servify.app.data.model.UserProfile
 import com.servify.app.data.repository.AuthRepository
 import com.servify.app.data.repository.BookingRepository
+import com.servify.app.data.repository.RepairRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CustomerDashboardViewModel @Inject constructor(
     private val bookingRepository: BookingRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val repairRepository: RepairRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CustomerDashboardUiState())
@@ -99,10 +102,25 @@ class CustomerDashboardViewModel @Inject constructor(
     fun selectBooking(booking: Booking) {
         selectedBooking = booking
     }
+
+    fun fetchRepairRequests() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val user = authRepository.getCurrentUser() ?: return@launch
+            repairRepository.getCustomerRequests(user.userId)
+                .onSuccess { requests ->
+                    _uiState.update { it.copy(isLoading = false, repairRequests = requests) }
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+        }
+    }
 }
 
 data class CustomerDashboardUiState(
     val bookings: List<Booking> = emptyList(),
+    val repairRequests: List<RepairRequest> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val userProfile: UserProfile? = null

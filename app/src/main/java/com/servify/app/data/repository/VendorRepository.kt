@@ -6,6 +6,8 @@ import com.servify.app.data.remote.SupabaseClientProvider
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -92,4 +94,52 @@ class VendorRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * Returns the existing vendor row for this user, or creates a minimal one if none exists.
+     * This satisfies the FK constraint on quotes.vendor_id without a manual onboarding step.
+     */
+    suspend fun getOrCreateVendorProfile(userId: String, displayName: String = "Vendor"): Result<Vendor> =
+        withContext(Dispatchers.IO) {
+            try {
+                // Check for existing vendor row
+                val existing = supabase.from("vendors")
+                    .select { filter { eq("user_id", userId) } }
+                    .decodeSingleOrNull<Vendor>()
+
+                if (existing != null) {
+                    Log.d("VendorRepository", "Found existing vendor: ${existing.id}")
+                    return@withContext Result.success(existing)
+                }
+
+                // None found — insert a minimal vendor row
+                Log.d("VendorRepository", "No vendor profile found for $userId — auto-creating one")
+                val created = supabase.from("vendors")
+                    .insert(
+                        buildJsonObject {
+                            put("user_id", userId)
+                            put("business_name", displayName)
+                            put("is_verified", false)
+                            put("is_available", true)
+                            put("rating", 0.0)
+                            put("total_reviews", 0)
+                            put("total_jobs", 0)
+                            put("completion_rate", 0.0)
+                            put("response_rate", 0.0)
+                            put("performance_score", 0.0)
+                            put("avg_response_minutes", 0)
+                            put("kyc_status", "PENDING")
+                        }
+                    ) {
+                        select()
+                    }
+                    .decodeSingle<Vendor>()
+
+                Log.d("VendorRepository", "Auto-created vendor: ${created.id}")
+                Result.success(created)
+            } catch (e: Exception) {
+                Log.e("VendorRepository", "Failed to get/create vendor profile", e)
+                Result.failure(e)
+            }
+        }
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.servify.app.ui.theme.*
 import androidx.compose.animation.core.animateDpAsState
@@ -24,11 +25,12 @@ import androidx.compose.ui.graphics.SolidColor
 
 // ==========================================================
 // Ambient Background Glow — subtle radial glow at top center
+// Adapts color to current MaterialTheme primary
 // ==========================================================
 @Composable
 fun AmbientGlow(
     modifier: Modifier = Modifier,
-    color: Color = ServifyBlue
+    color: Color = MaterialTheme.colorScheme.primary
 ) {
     Box(
         modifier = modifier
@@ -37,7 +39,7 @@ fun AmbientGlow(
             .background(
                 Brush.radialGradient(
                     colors = listOf(
-                        color.copy(alpha = 0.08f),
+                        color.copy(alpha = 0.06f),
                         Color.Transparent
                     ),
                     radius = 600f
@@ -47,7 +49,7 @@ fun AmbientGlow(
 }
 
 // ==========================================================
-// Search Field with focus glow animation
+// Search Field — theme-adaptive, focus glow animation
 // ==========================================================
 @Composable
 fun ServifySearchField(
@@ -63,18 +65,22 @@ fun ServifySearchField(
         label = "search_border"
     )
 
+    val bgColor = MaterialTheme.colorScheme.surfaceVariant
+    val borderColor = if (isFocused)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    else
+        MaterialTheme.colorScheme.outline
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(DarkSurfaceLight)
-            .then(
-                if (borderWidth > 0.dp) {
-                    Modifier.border(borderWidth, ServifyBlue.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                } else {
-                    Modifier.border(1.dp, DarkBorder, RoundedCornerShape(16.dp))
-                }
+            .height(64.dp) // Increased height for visual weight
+            .clip(RoundedCornerShape(20.dp))
+            .background(bgColor)
+            .border(
+                width = if (isFocused) 2.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(20.dp)
             )
     ) {
         Row(
@@ -86,7 +92,7 @@ fun ServifySearchField(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
-                tint = TextSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -97,18 +103,19 @@ fun ServifySearchField(
                     .weight(1f)
                     .onFocusChanged { isFocused = it.isFocused },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = TextPrimary,
-                    fontFamily = Satoshi
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Medium
                 ),
                 singleLine = true,
-                cursorBrush = SolidColor(ServifyBlue),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 decorationBox = { innerTextField ->
                     if (value.isEmpty()) {
                         Text(
                             text = placeholder,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary,
-                            fontFamily = Satoshi
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            fontFamily = Inter
                         )
                     }
                     innerTextField()

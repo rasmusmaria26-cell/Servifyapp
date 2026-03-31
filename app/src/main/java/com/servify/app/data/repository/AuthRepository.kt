@@ -66,7 +66,10 @@ class AuthRepository @Inject constructor(
             
             Result.success(profile)
         } catch (e: Exception) {
-            Log.e("AuthRepository", "Sign in failed", e)
+            Log.e("AuthRepository", "Sign in failed: ${e.javaClass.simpleName} - ${e.message}", e)
+            if (e.cause != null) {
+                Log.e("AuthRepository", "Cause: ${e.cause?.javaClass?.simpleName} - ${e.cause?.message}", e.cause)
+            }
             Result.failure(e)
         }
     }
@@ -134,6 +137,10 @@ class AuthRepository @Inject constructor(
             
             Result.success(profile)
         } catch (e: Exception) {
+            Log.e("AuthRepository", "Sign up failed: ${e.javaClass.simpleName} - ${e.message}", e)
+            if (e.cause != null) {
+                Log.e("AuthRepository", "Cause: ${e.cause?.javaClass?.simpleName} - ${e.cause?.message}", e.cause)
+            }
             Result.failure(e)
         }
     }
@@ -141,6 +148,15 @@ class AuthRepository @Inject constructor(
     suspend fun signOut(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             supabase.auth.signOut()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun resetPassword(email: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            supabase.auth.resetPasswordForEmail(email)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

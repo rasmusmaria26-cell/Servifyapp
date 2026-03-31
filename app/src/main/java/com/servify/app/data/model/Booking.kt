@@ -3,6 +3,8 @@ package com.servify.app.data.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.servify.app.data.model.Service
+import com.servify.app.data.model.ProfileDto
+import com.servify.app.data.model.Vendor
 
 @Serializable
 data class Booking(
@@ -24,6 +26,8 @@ data class Booking(
     @SerialName("scheduled_time")
     val scheduledTime: String,
     val address: String,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     @SerialName("estimated_cost")
     val estimatedPrice: Double?,
     @SerialName("final_cost")
@@ -32,7 +36,11 @@ data class Booking(
     @SerialName("payment_status")
     val paymentStatus: String, // PENDING, PAID
     @SerialName("created_at")
-    val createdAt: String
+    val createdAt: String,
+    @SerialName("vendor")
+    val vendorProfile: ProfileDto? = null,
+    @SerialName("vendor_details")
+    val vendorDetails: Vendor? = null
 )
 
 @Serializable
@@ -42,5 +50,7 @@ data class AIDiagnosis(
     val estimatedTime: String,
     val recommendedService: String,
     val urgency: String,
-    val possibleCauses: List<String>
+    val urgencyReason: String = "",
+    val possibleCauses: List<String>,
+    val customerAdvice: String = ""
 )

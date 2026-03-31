@@ -11,13 +11,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.graphics.Bitmap
+import com.servify.app.data.model.AIDiagnosis
+import com.servify.app.data.remote.GeminiApiClient
 
 @HiltViewModel
 class CreateBookingViewModel @Inject constructor(
     private val getMatchedVendorsUseCase: GetMatchedVendorsUseCase,
-    private val createBookingUseCase: CreateBookingUseCase
+    private val createBookingUseCase: CreateBookingUseCase,
+    private val geminiApiClient: GeminiApiClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreateBookingUiState())
@@ -26,6 +31,10 @@ class CreateBookingViewModel @Inject constructor(
 
     fun onDescriptionChange(description: String) {
         _uiState.update { it.copy(issueDescription = description) }
+    }
+
+    fun onImagesSelected(bitmaps: List<Bitmap>) {
+        _uiState.update { it.copy(selectedBitmaps = bitmaps) }
     }
 
     fun onServiceCategorySelected(category: String) {
@@ -47,13 +56,20 @@ class CreateBookingViewModel @Inject constructor(
     fun onAddressChange(address: String) {
         _uiState.update { it.copy(address = address) }
     }
+    
+    fun onLocationSelected(lat: Double, lng: Double) {
+        _uiState.update { it.copy(latitude = lat, longitude = lng) }
+    }
 
     fun onNextStep() {
         val nextStep = _uiState.value.currentStep + 1
         _uiState.update { it.copy(currentStep = nextStep) }
         
-        if (nextStep == 2) {
-            fetchVendors()
+        when (nextStep) {
+            2 -> {
+                fetchVendors()
+                fetchDiagnosis()
+            }
         }
     }
 
@@ -82,6 +98,38 @@ class CreateBookingViewModel @Inject constructor(
         }
     }
 
+    private fun fetchDiagnosis() {
+        val state = _uiState.value
+        val description = state.issueDescription
+        val category = state.selectedServiceCategory ?: "General Repair"
+
+        if (description.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingDiagnosis = true, diagnosisError = null) }
+
+            geminiApiClient.getDiagnosis(
+                description = description,
+                images = _uiState.value.selectedBitmaps,
+                serviceCategory = category
+            ).onSuccess { diagnosis ->
+                _uiState.update {
+                    it.copy(
+                        isLoadingDiagnosis = false,
+                        aiDiagnosis = diagnosis
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        isLoadingDiagnosis = false,
+                        diagnosisError = "Diagnosis unavailable — a technician will assess on arrival."
+                    )
+                }
+            }
+        }
+    }
+
     fun onConfirmBooking() {
         val currentState = _uiState.value
         if (currentState.isCreatingBooking || currentState.bookingCreated) return
@@ -92,12 +140,19 @@ class CreateBookingViewModel @Inject constructor(
             createBookingUseCase(
                 serviceCategory = currentState.selectedServiceCategory ?: "AC Repair",
                 issueDescription = currentState.issueDescription,
-                aiDiagnosis = null,
+                aiDiagnosis = currentState.aiDiagnosis,
                 scheduledDate = currentState.selectedDate,
                 scheduledTime = currentState.selectedTime,
                 address = currentState.address,
+                latitude = currentState.latitude ?: 28.6139,
+                longitude = currentState.longitude ?: 77.2090,
                 vendorId = currentState.selectedVendor?.id,
-                estimatedPrice = null // No AI to estimate cost
+                estimatedPrice = currentState.aiDiagnosis?.estimatedCost
+                    ?.replace(Regex("[^0-9]"), "")
+                    ?.split("-")
+                    ?.firstOrNull()
+                    ?.trim()
+                    ?.toDoubleOrNull()
             ).onSuccess { booking ->
                 _uiState.update { 
                     it.copy(
@@ -121,7 +176,11 @@ data class CreateBookingUiState(
     val currentStep: Int = 1,
     val issueDescription: String = "",
     val selectedServiceCategory: String? = null,
-    val selectedImages: List<String> = emptyList(),
+    val selectedBitmaps: List<Bitmap> = emptyList(),
+    
+    val isLoadingDiagnosis: Boolean = false,
+    val aiDiagnosis: AIDiagnosis? = null,
+    val diagnosisError: String? = null,
     
     val isLoadingVendors: Boolean = false,
     val matchedVendors: List<Vendor> = emptyList(),
@@ -130,6 +189,8 @@ data class CreateBookingUiState(
     val selectedDate: String = "",
     val selectedTime: String = "",
     val address: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     
     val isCreatingBooking: Boolean = false,
     val bookingCreated: Boolean = false,

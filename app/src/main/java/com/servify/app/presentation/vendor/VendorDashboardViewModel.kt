@@ -25,6 +25,9 @@ class VendorDashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VendorDashboardUiState())
     val uiState: StateFlow<VendorDashboardUiState> = _uiState.asStateFlow()
 
+    private val _signedOut = MutableStateFlow(false)
+    val signedOut: StateFlow<Boolean> = _signedOut.asStateFlow()
+
     init {
         loadVendorData()
     }
@@ -88,12 +91,18 @@ class VendorDashboardViewModel @Inject constructor(
         viewModelScope.launch {
             bookingRepository.updateBookingStatus(bookingId, status)
                 .onSuccess {
-                    // Refresh bookings after status update
                     uiState.value.vendor?.let { fetchBookings(it.id) }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(error = "Update failed: ${error.message}") }
                 }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _signedOut.value = true
         }
     }
 }

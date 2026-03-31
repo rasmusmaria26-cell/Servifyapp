@@ -2,120 +2,170 @@ package com.servify.app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
 import com.servify.app.R
 
-// Google Fonts Provider
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
+// ============================================================
+// SERVIFY DESIGN SYSTEM — Typography
+// Fonts are BUNDLED as static assets in /res/font.
+// DO NOT use Downloadable Fonts — first-launch flash is unacceptable.
+// ============================================================
+
+// --- Tier 1: Display / Headers (The "Wow" factor) ---
+// Space Grotesk — bold, characterful, modern startup personality.
+// Used for: displayLarge/Medium/Small, headlineLarge/Medium
+val SpaceGrotesk = FontFamily(
+    Font(R.font.space_grotesk_regular,  FontWeight.Normal),
+    Font(R.font.space_grotesk_medium,   FontWeight.Medium),
+    Font(R.font.space_grotesk_semibold, FontWeight.SemiBold),
+    Font(R.font.space_grotesk_bold,     FontWeight.Bold),
 )
 
-val JakartaSansFont = GoogleFont("Plus Jakarta Sans")
+// --- Tier 2: Medium UI / Interactive (The "Action" factor) ---
+// Space Grotesk Medium/SemiBold with tight tracking.
+// Used for: labelLarge/Medium, titleLarge/Medium (buttons, nav items, tabs)
+// (Reuses SpaceGrotesk family, see labelLarge/titleMedium styles below)
 
-val JakartaSans = FontFamily(
-    Font(googleFont = JakartaSansFont, fontProvider = provider)
+// --- Tier 3: Body / Data / Forms (The "Readable" factor) ---
+// Inter — highly legible geometric sans-serif.
+// Used for: bodyLarge/Medium/Small (lists, tables, text areas, filter chips)
+val Inter = FontFamily(
+    Font(R.font.inter_regular,   FontWeight.Normal),
+    Font(R.font.inter_medium,    FontWeight.Medium),
+    Font(R.font.inter_semibold,  FontWeight.SemiBold),
+    Font(R.font.inter_bold,      FontWeight.Bold),
 )
 
-// Placeholder for Satoshi until files are provided, using JakartaSans as fallback
-val Satoshi = JakartaSans
+// --- Backward-Compatibility Aliases ---
+// Existing screens reference these names. They now map to the new bundled fonts.
+// These will be removed once all screens are fully migrated in later phases.
+/** @deprecated Use [SpaceGrotesk] or MaterialTheme.typography directly. */
+val Satoshi = SpaceGrotesk
+/** @deprecated Use [Inter] directly. */
+val JakartaSans = Inter
+
+// --- Financial / Metrics ---
+// FontFamily.Monospace + fontFeatureSettings = "tnum" (tabular numerals).
+// Applied at the call site on every Text composable rendering currency or metrics.
+// See: ServifyTextStyles.financial in ServifyTextStyles.kt
 
 val Typography = Typography(
-    // Headlines - Satoshi (Bold/Medium)
+
+    // === DISPLAY (Space Grotesk — Hero moments only) ===
+    displayLarge = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.Bold,
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.Bold,
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
+        letterSpacing = 0.sp
+    ),
+    displaySmall = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
+        letterSpacing = 0.sp
+    ),
+
+    // === HEADLINE (Space Grotesk) ===
     headlineLarge = TextStyle(
-        fontFamily = Satoshi,
+        fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = Satoshi,
+        fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = Satoshi,
-        fontWeight = FontWeight.Bold,
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
 
-    // Titles - Satoshi (Medium)
+    // === TITLE (Space Grotesk — Medium UI / Interactive tier) ===
     titleLarge = TextStyle(
-        fontFamily = Satoshi,
-        fontWeight = FontWeight.Medium,
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        letterSpacing = (-0.5).sp  // Tight tracking for interactive elements
     ),
     titleMedium = TextStyle(
-        fontFamily = Satoshi,
-        fontWeight = FontWeight.SemiBold, // Slightly bolder for buttons
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = (-0.3).sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.2).sp
+    ),
+
+    // === BODY (Inter — Data / Forms / Readable tier) ===
+    bodyLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
-    titleSmall = TextStyle(
-        fontFamily = Satoshi,
-        fontWeight = FontWeight.Medium,
+    bodyMedium = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
-    ),
-
-    // Body - Plus Jakarta Sans (Regular)
-    bodyLarge = TextStyle(
-        fontFamily = JakartaSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = JakartaSans,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = JakartaSans,
+        fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
-    ),
-
-    // Labels - Plus Jakarta Sans (Medium)
-    labelLarge = TextStyle(
-        fontFamily = JakartaSans,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
+
+    // === LABEL (Space Grotesk — Medium UI / Interactive tier) ===
+    labelLarge = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.1).sp
+    ),
     labelMedium = TextStyle(
-        fontFamily = JakartaSans,
+        fontFamily = Inter,  // Inter for compact data labels (FilterChip, secondary labels)
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.1.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = JakartaSans,
+        fontFamily = Inter,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.1.sp
     )
 )

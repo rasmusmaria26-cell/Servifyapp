@@ -97,14 +97,13 @@ fun SplashScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Logo text
             Text(
                 text = "Servify",
-                style = MaterialTheme.typography.displayMedium.copy(
-                    fontFamily = Satoshi,
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 48.sp,
-                    letterSpacing = (-1).sp
+                    fontSize = 52.sp,
+                    letterSpacing = (-1.5).sp
                 ),
                 color = TextPrimary,
                 modifier = Modifier
@@ -114,19 +113,20 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Tagline
             Text(
                 text = "Services at your fingertips",
                 style = MaterialTheme.typography.bodyLarge,
+                fontFamily = Inter,
+                fontWeight = FontWeight.Medium,
                 color = TextSecondary,
                 modifier = Modifier.alpha(taglineAlpha.value)
             )
         }
 
-        // Bottom branding
         Text(
             text = "Made with ♥",
             style = MaterialTheme.typography.labelSmall,
+            fontFamily = Inter,
             color = TextSecondary.copy(alpha = 0.5f),
             modifier = Modifier
                 .align(Alignment.BottomCenter)

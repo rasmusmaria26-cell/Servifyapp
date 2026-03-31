@@ -56,7 +56,7 @@ fun ServifyButton(
                 scaleY = scale
             },
         enabled = enabled && !isLoading,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(18.dp), // Sharper, modern corner matching the FAB
         interactionSource = interactionSource,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
@@ -75,9 +75,10 @@ fun ServifyButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = Satoshi,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 17.sp,
+                    letterSpacing = (-0.5).sp
                 )
             )
         }

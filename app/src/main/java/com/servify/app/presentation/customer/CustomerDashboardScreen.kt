@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.ui.theme.*
 import com.servify.app.presentation.components.AmbientGlow
@@ -35,13 +36,16 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CustomerDashboardScreen(
+    selectedTab: Int,
     viewModel: CustomerDashboardViewModel = hiltViewModel(),
-    onNavigateToBooking: () -> Unit,
+    onNavigateToBooking: () -> Unit = {},
+    onNavigateToRepairRequest: () -> Unit = {},
+    onNavigateToQuotes: (String) -> Unit = {},
+    onNavigateToActiveRepair: (String) -> Unit = {},
     onNavigateToBookingDetail: (String) -> Unit = {},
     onSignOut: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(0) }
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     // Observe sign-out event
@@ -50,125 +54,62 @@ fun CustomerDashboardScreen(
         if (signedOut) onSignOut()
     }
 
-    Scaffold(
-        containerColor = DarkBackground,
-        bottomBar = {
-            NavigationBar(
-                containerColor = DarkSurface,
-                contentColor = TextPrimary,
-                tonalElevation = 0.dp,
-                modifier = Modifier.height(80.dp)
-            ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home", fontFamily = Satoshi, fontWeight = FontWeight.Medium) },
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = ServifyBlue,
-                        selectedTextColor = ServifyBlue,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary,
-                        indicatorColor = ServifyBlue.copy(alpha = 0.12f)
-                    )
-                )
-                NavigationBarItem(
-                    icon = {
-                        val pendingCount = uiState.bookings.count { it.status == "PENDING" }
-                        if (pendingCount > 0) {
-                            BadgedBox(
-                                badge = {
-                                    Badge(
-                                        containerColor = ServifyBlue,
-                                        contentColor = Color.White
-                                    ) {
-                                        Text(pendingCount.toString())
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Default.History, contentDescription = "Bookings")
-                            }
-                        } else {
-                            Icon(Icons.Default.History, contentDescription = "Bookings")
-                        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+    
+        // Inline tab row (temporary — will be moved to ServifyBottomNavBar in later pass)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
+        ) {
+            when (selectedTab) {
+                0 -> HomeScreenContent(uiState, onNavigateToBooking)
+                1 -> BookingsListContent(
+                    uiState = uiState,
+                    onBookingClick = { booking ->
+                        viewModel.selectBooking(booking)
+                        onNavigateToBookingDetail(booking.id)
                     },
-                    label = { Text("Orders", fontFamily = Satoshi, fontWeight = FontWeight.Medium) },
-                    selected = selectedTab == 1,
-                    onClick = {
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                        selectedTab = 1
-                        viewModel.fetchBookings()
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = ServifyBlue,
-                        selectedTextColor = ServifyBlue,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary,
-                        indicatorColor = ServifyBlue.copy(alpha = 0.12f)
-                    )
+                    onRefresh = { viewModel.fetchBookings() }
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile", fontFamily = Satoshi, fontWeight = FontWeight.Medium) },
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = ServifyBlue,
-                        selectedTextColor = ServifyBlue,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary,
-                        indicatorColor = ServifyBlue.copy(alpha = 0.12f)
-                    )
+                2 -> MyRepairRequestsContent(
+                    viewModel = viewModel,
+                    onNavigateToQuotes = onNavigateToQuotes,
+                    onNavigateToActiveRepair = onNavigateToActiveRepair,
+                    onPostRepair = onNavigateToRepairRequest
                 )
+                3 -> ProfileScreenContent(viewModel)
             }
-        },
-        floatingActionButton = {
+        }
+
+        // FAB — scoped spring physics (FAB + CTA only, per architecture spec)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(end = 20.dp, bottom = 88.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
             AnimatedVisibility(
-                visible = selectedTab == 0,
+                visible = selectedTab == 0 || selectedTab == 2,
                 enter = scaleIn(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
                 exit = scaleOut() + fadeOut()
             ) {
                 FloatingActionButton(
-                    onClick = onNavigateToBooking,
-                    containerColor = ServifyBlue,
-                    contentColor = Color.White,
-                    shape = CircleShape
+                    onClick = if (selectedTab == 2) onNavigateToRepairRequest else onNavigateToBooking,
+                    containerColor = MaterialTheme.colorScheme.onBackground, // High-Contrast Premium FAB
+                    contentColor = MaterialTheme.colorScheme.background,
+                    shape = RoundedCornerShape(18.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "New Booking")
-                }
-            }
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Subtle ambient glow at top
-            AmbientGlow()
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Crossfade(
-                    targetState = selectedTab,
-                    animationSpec = tween(300),
-                    label = "tab_crossfade"
-                ) { tab ->
-                    when (tab) {
-                        0 -> HomeScreenContent(uiState, onNavigateToBooking)
-                        1 -> BookingsListContent(
-                            uiState = uiState,
-                            onBookingClick = { booking ->
-                                viewModel.selectBooking(booking)
-                                onNavigateToBookingDetail(booking.id)
-                            },
-                            onRefresh = { viewModel.fetchBookings() }
-                        )
-                        2 -> ProfileScreenContent(viewModel)
-                    }
+                    Icon(
+                        if (selectedTab == 2) Icons.Default.Build else Icons.Default.Add,
+                        contentDescription = if (selectedTab == 2) "Post Repair Request" else "New Booking",
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
             }
         }
@@ -209,30 +150,33 @@ fun HomeScreenContent(
                 Column {
                     Text(
                         text = "Good Morning,",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                        fontFamily = Satoshi
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "What needs fixing?",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontFamily = Satoshi,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        text = "What needs\nfixing?",
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontFamily = SpaceGrotesk,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 62.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 IconButton(
                     onClick = { /* Settings */ },
                     modifier = Modifier
                         .size(44.dp)
-                        .background(DarkSurface, CircleShape)
-                        .border(1.dp, DarkBorder, CircleShape)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
-                        tint = TextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -249,20 +193,84 @@ fun HomeScreenContent(
             )
         }
 
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Feature/Promo Banner (Accessibility Scrim Demo)
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
+                shape = RoundedCornerShape(24.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Placeholder for a Hero Image (would use AsyncImage/painterResource in production)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                    colors = listOf(ElectronicsBlue, ServifyBlue)
+                                )
+                            )
+                    )
+                    
+                    // MANDATORY ACCESSIBILITY SCRIM (Phase 17 Hardening)
+                    // High-contrast overlay to ensure text readability over any background image
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.45f))
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        Text(
+                            text = "20% OFF",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontFeatureSettings = "tnum",
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = AmberAccent
+                        )
+                        Text(
+                            text = "Summer AC Servicing",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = SpaceGrotesk
+                            ),
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Valid until May 31",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
         // Section Header
         item {
-            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Services",
-                style = MaterialTheme.typography.titleLarge,
-                fontFamily = Satoshi,
+                style = MaterialTheme.typography.headlineSmall,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Full-Width Horizontal Service Cards with Staggered Animation
         itemsIndexed(filteredServices) { index, service ->
             val animatedAlpha = remember { Animatable(0f) }
             val animatedOffset = remember { Animatable(30f) }
@@ -285,8 +293,53 @@ fun HomeScreenContent(
                         translationY = animatedOffset.value
                     }
             )
-            if (index < filteredServices.lastIndex) {
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Suggested/Recent (Filling the Dead Zone)
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Recent Activity",
+                style = MaterialTheme.typography.titleLarge,
+                fontFamily = SpaceGrotesk,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Past Bookings",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = SpaceGrotesk
+                            )
+                        )
+                        Text("You have 2 completed repairs", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
         }
 
@@ -328,16 +381,16 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(ServifyBlue.copy(alpha = 0.15f))
-                        .border(2.dp, ServifyBlue.copy(alpha = 0.4f), CircleShape),
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = initials,
                         style = MaterialTheme.typography.headlineMedium,
-                        fontFamily = Satoshi,
+                        fontFamily = SpaceGrotesk,
                         fontWeight = FontWeight.Bold,
-                        color = ServifyBlue
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -346,9 +399,9 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                 Text(
                     text = profile?.fullName ?: "Loading...",
                     style = MaterialTheme.typography.titleLarge,
-                    fontFamily = Satoshi,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -356,15 +409,15 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                 // Role badge
                 Box(
                     modifier = Modifier
-                        .background(ServifyBlue.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20.dp))
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = (profile?.role ?: "customer").replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.labelMedium,
-                        color = ServifyBlue,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = Satoshi
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Inter
                     )
                 }
             }
@@ -381,8 +434,8 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                    border = BorderStroke(1.dp, DarkBorder)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -390,16 +443,16 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                     ) {
                         Text(
                             text = "${uiState.bookings.size}",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            color = ServifyBlue,
-                            fontFamily = Satoshi
+                            color = MaterialTheme.colorScheme.primary,
+                            fontFamily = SpaceGrotesk
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Bookings",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -408,8 +461,8 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                    border = BorderStroke(1.dp, DarkBorder)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -419,14 +472,14 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                             text = profile?.createdAt?.take(10) ?: "—",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
-                            fontFamily = Satoshi
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontFamily = SpaceGrotesk
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Member Since",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -439,9 +492,9 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
             Text(
                 text = "Settings",
                 style = MaterialTheme.typography.titleMedium,
-                fontFamily = Satoshi,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -461,8 +514,8 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                     .fillMaxWidth()
                     .clickable { /* TODO */ },
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                border = BorderStroke(1.dp, DarkBorder)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Row(
                     modifier = Modifier
@@ -474,17 +527,28 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(DarkSurfaceLight),
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(icon, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+                        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(title, style = MaterialTheme.typography.titleSmall, color = TextPrimary, fontFamily = Satoshi, fontWeight = FontWeight.SemiBold)
-                        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = Inter
+                        )
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 }
             }
             if (index < settingsItems.lastIndex) {
@@ -499,15 +563,16 @@ fun ProfileScreenContent(viewModel: CustomerDashboardViewModel) {
                 onClick = { viewModel.signOut() },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                border = BorderStroke(1.dp, ErrorRed.copy(alpha = 0.5f)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed)
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Sign Out",
-                    fontFamily = Satoshi,
-                    fontWeight = FontWeight.SemiBold
+                    text = "Sign Out",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
@@ -568,28 +633,29 @@ fun ServiceRow(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Colored icon container
+            // High-Contrast Solid Container (NO PASTEL BLOBS)
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(service.color.copy(alpha = 0.12f)),
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.onBackground)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = service.icon,
                     contentDescription = null,
-                    tint = service.color,
-                    modifier = Modifier.size(26.dp)
+                    tint = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
@@ -600,15 +666,16 @@ fun ServiceRow(
                 Text(
                     text = service.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontFamily = Satoshi,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = service.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    fontFamily = Inter,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -616,9 +683,178 @@ fun ServiceRow(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = TextSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(24.dp)
             )
+        }
+    }
+}
+
+// ── My Repair Requests Tab ────────────────────────────────────────────────────
+
+@Composable
+fun MyRepairRequestsContent(
+    viewModel: CustomerDashboardViewModel,
+    onNavigateToQuotes: (String) -> Unit,
+    onNavigateToActiveRepair: (String) -> Unit = {},
+    onPostRepair: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) { viewModel.fetchRepairRequests() }
+
+    if (uiState.repairRequests.isEmpty() && !uiState.isLoading) {
+        // Empty state
+        val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.3f, targetValue = 0.9f,
+            animationSpec = infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "alpha"
+        )
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Default.Build,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(Modifier.height(24.dp))
+                Text(
+                    text = "No repair requests yet",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Post a request to get expert quotes",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Inter
+                )
+            }
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
+        ) {
+            item {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "My Repair Requests",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Tap a request to view incoming vendor quotes",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Inter
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            if (uiState.isLoading) {
+                item {
+                    Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            } else {
+                itemsIndexed(uiState.repairRequests) { idx, request ->
+                    val statusColor = when (request.status) {
+                        "OPEN"      -> Color(0xFF4CAF50)
+                        "ACCEPTED"  -> ServifyBlue
+                        "IN_REPAIR" -> Color(0xFFFFC107)
+                        "COMPLETED" -> Color(0xFF4CAF50)
+                        else        -> TextSecondary
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                when (request.status) {
+                                    "OPEN", "QUOTED" -> onNavigateToQuotes(request.id)
+                                    else -> onNavigateToActiveRepair(request.id)
+                                }
+                            },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "${request.deviceType} · ${request.brand}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        fontFamily = SpaceGrotesk,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = request.issueCategory,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                // Status badge
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(statusColor.copy(alpha = 0.1f))
+                                        .border(1.dp, statusColor.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = request.status,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = statusColor,
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = request.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontFamily = Inter,
+                                maxLines = 2
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                val (ctaIcon, ctaText) = when (request.status) {
+                                    "OPEN", "QUOTED" -> Icons.Default.ChevronRight to "View Quotes"
+                                    "COMPLETED" -> Icons.Default.CheckCircle to "Completed"
+                                    else -> Icons.Default.ChevronRight to "Track Repair"
+                                }
+                                Icon(ctaIcon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = ctaText,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

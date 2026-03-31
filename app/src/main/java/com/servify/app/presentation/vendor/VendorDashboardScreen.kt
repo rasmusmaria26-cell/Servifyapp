@@ -26,15 +26,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.data.model.Booking
 import com.servify.app.ui.theme.*
 import com.servify.app.presentation.components.AmbientGlow
+import com.servify.app.core.UserSession
+import com.servify.app.core.AppMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VendorDashboardScreen(
-    viewModel: VendorDashboardViewModel = hiltViewModel()
+    viewModel: VendorDashboardViewModel = hiltViewModel(),
+    onNavigateToRepairFeed: () -> Unit = {},
+    onSignOut: () -> Unit = {},
+    onNavigateToMap: (String, Double, Double) -> Unit = { _, _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val signedOut by viewModel.signedOut.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    LaunchedEffect(signedOut) {
+        if (signedOut) onSignOut()
+    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -46,29 +56,63 @@ fun VendorDashboardScreen(
                             text = "Professional Portal",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary,
-                            fontFamily = JakartaSans
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = uiState.vendor?.businessName ?: "Service Provider",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary,
-                            fontFamily = Satoshi
+                            fontFamily = SpaceGrotesk
                         )
                     }
                 },
                 actions = {
+                    // Switch to Customer mode
                     IconButton(
-                        onClick = { /* TODO */ },
+                        onClick = { UserSession.switchMode(AppMode.CUSTOMER) },
                         modifier = Modifier
                             .background(DarkSurface, CircleShape)
                             .border(1.dp, DarkBorder, CircleShape)
                             .size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = TextSecondary,
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = "Switch to Customer",
+                            tint = ServifyBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    // Repair feed shortcut
+                    IconButton(
+                        onClick = onNavigateToRepairFeed,
+                        modifier = Modifier
+                            .background(DarkSurface, CircleShape)
+                            .border(1.dp, DarkBorder, CircleShape)
+                            .size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Build,
+                            contentDescription = "Repair Requests",
+                            tint = ServifyBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    // Sign-out
+                    IconButton(
+                        onClick = { viewModel.signOut() },
+                        modifier = Modifier
+                            .background(DarkSurface, CircleShape)
+                            .border(1.dp, DarkBorder, CircleShape)
+                            .size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Sign Out",
+                            tint = ErrorRed,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -133,47 +177,58 @@ fun VendorDashboardScreen(
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        text = { Text("Active", color = if (selectedTab == 0) TextPrimary else TextSecondary) }
+                        text = { Text("Active", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 0) TextPrimary else TextSecondary) }
                     )
                     Tab(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        text = { Text("History", color = if (selectedTab == 1) TextPrimary else TextSecondary) }
+                        text = { Text("History", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 1) TextPrimary else TextSecondary) }
+                    )
+                    Tab(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        text = { Text("My Jobs", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 2) ServifyBlue else TextSecondary) }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Bookings List
-                if (uiState.isLoading && uiState.bookings.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = ServifyBlue)
-                    }
-                } else if (uiState.bookings.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No bookings found.", color = TextSecondary)
-                    }
-                } else {
-                    val filteredBookings = if (selectedTab == 0) {
-                        uiState.bookings.filter { booking -> booking.status == "PENDING" || booking.status == "ACCEPTED" }
-                    } else {
-                        uiState.bookings.filter { booking -> booking.status == "COMPLETED" || booking.status == "CANCELLED" }
-                    }
+                when (selectedTab) {
+                    2 -> MyJobsContent()
+                    else -> {
+                        // Original bookings list
+                        if (uiState.isLoading && uiState.bookings.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = ServifyBlue)
+                            }
+                        } else if (uiState.bookings.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("No bookings found.", style = MaterialTheme.typography.bodyLarge, fontFamily = Inter, color = TextSecondary)
+                            }
+                        } else {
+                            val filteredBookings = if (selectedTab == 0) {
+                                uiState.bookings.filter { booking -> booking.status == "PENDING" || booking.status == "ACCEPTED" }
+                            } else {
+                                uiState.bookings.filter { booking -> booking.status == "COMPLETED" || booking.status == "CANCELLED" }
+                            }
 
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(filteredBookings) { booking ->
-                            VendorBookingCard(
-                                booking = booking,
-                                onStatusUpdate = { status ->
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                    viewModel.updateBookingStatus(booking.id, status)
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(filteredBookings) { booking ->
+                                    VendorBookingCard(
+                                        booking = booking,
+                                        onStatusUpdate = { status ->
+                                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                            viewModel.updateBookingStatus(booking.id, status)
+                                        },
+                                        onNavigateToMap = onNavigateToMap
+                                    )
                                 }
-                            )
+                                item { Spacer(modifier = Modifier.height(16.dp)) }
+                            }
                         }
-                        item { Spacer(modifier = Modifier.height(16.dp)) }
                     }
                 }
             }
@@ -205,12 +260,17 @@ fun MetricCard(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
+                fontFamily = Inter,
+                fontWeight = FontWeight.Bold,
                 color = TextSecondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = SpaceGrotesk,
+                    fontFeatureSettings = "tnum"
+                ),
                 fontWeight = FontWeight.Bold,
                 color = accentColor
             )
@@ -221,7 +281,8 @@ fun MetricCard(
 @Composable
 fun VendorBookingCard(
     booking: Booking,
-    onStatusUpdate: (String) -> Unit
+    onStatusUpdate: (String) -> Unit,
+    onNavigateToMap: (String, Double, Double) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -258,7 +319,7 @@ fun VendorBookingCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
-                    fontFamily = Satoshi
+                    fontFamily = SpaceGrotesk
                 )
                 StatusBadge(status = booking.status)
             }
@@ -278,6 +339,8 @@ fun VendorBookingCard(
                     Text(
                         text = "${booking.scheduledDate} at ${booking.scheduledTime}",
                         style = MaterialTheme.typography.labelSmall,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold,
                         color = TextSecondary
                     )
                 }
@@ -288,9 +351,27 @@ fun VendorBookingCard(
             Text(
                 text = booking.address,
                 style = MaterialTheme.typography.bodyMedium,
+                fontFamily = Inter,
                 color = TextSecondary,
                 maxLines = 2
             )
+
+            val lat = booking.latitude
+            val lng = booking.longitude
+            if (lat != null && lng != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = { onNavigateToMap("Customer Location", lat, lng) },
+                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ServifyBlue),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, ServifyBlue.copy(alpha = 0.5f))
+                ) {
+                    Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("View Customer Location", fontFamily = Inter, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                }
+            }
 
             if (booking.status == "PENDING" || booking.status == "ACCEPTED") {
                 Spacer(modifier = Modifier.height(20.dp))
@@ -305,7 +386,7 @@ fun VendorBookingCard(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = ServifyBlue)
                         ) {
-                            Text("Accept", style = MaterialTheme.typography.labelLarge)
+                            Text("Accept", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold)
                         }
                         OutlinedButton(
                             onClick = { onStatusUpdate("CANCELLED") },
@@ -313,7 +394,7 @@ fun VendorBookingCard(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed)
                         ) {
-                            Text("Reject", style = MaterialTheme.typography.labelLarge)
+                            Text("Reject", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold)
                         }
                     } else if (booking.status == "ACCEPTED") {
                         Button(
@@ -324,7 +405,7 @@ fun VendorBookingCard(
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Mark as Completed", style = MaterialTheme.typography.labelLarge)
+                            Text("Mark as Completed", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -358,6 +439,7 @@ fun StatusBadge(status: String) {
             text = status,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
+            fontFamily = Inter,
             fontWeight = FontWeight.Bold,
             color = textColor
         )

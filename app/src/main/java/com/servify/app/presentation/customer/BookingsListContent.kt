@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +39,10 @@ fun BookingsListContent(
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             text = "Your Bookings",
-            style = MaterialTheme.typography.headlineMedium,
-            fontFamily = Satoshi,
+            style = MaterialTheme.typography.headlineSmall,
+            fontFamily = SpaceGrotesk,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -53,7 +54,7 @@ fun BookingsListContent(
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = uiState.error,
-                        color = ErrorRed,
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
                     )
@@ -70,6 +71,7 @@ fun BookingsListContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(state.nestedScrollConnection)
+                    .clipToBounds()
             ) {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -83,8 +85,8 @@ fun BookingsListContent(
                 PullToRefreshContainer(
                     state = state,
                     modifier = Modifier.align(Alignment.TopCenter),
-                    containerColor = DarkSurface,
-                    contentColor = ServifyBlue
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
                 )
 
                 LaunchedEffect(state.isRefreshing) {
@@ -125,7 +127,7 @@ private fun AnimatedEmptyState() {
             Icon(
                 Icons.Default.Inbox,
                 contentDescription = null,
-                tint = ServifyBlue,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .size(64.dp)
                     .alpha(iconAlpha)
@@ -134,16 +136,17 @@ private fun AnimatedEmptyState() {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "No bookings yet",
-                style = MaterialTheme.typography.titleMedium,
-                fontFamily = Satoshi,
+                style = MaterialTheme.typography.titleLarge,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Your service bookings will appear here",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
+                fontFamily = Inter,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
@@ -170,8 +173,8 @@ fun BookingItemCard(booking: Booking, onClick: () -> Unit = {}) {
                 onClick = onClick
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = BorderStroke(1.dp, DarkBorder)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -182,8 +185,9 @@ fun BookingItemCard(booking: Booking, onClick: () -> Unit = {}) {
                 Text(
                     text = booking.service?.name ?: "Service",
                     style = MaterialTheme.typography.titleMedium,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 // Status badge
                 Box(
@@ -198,6 +202,7 @@ fun BookingItemCard(booking: Booking, onClick: () -> Unit = {}) {
                         text = booking.status,
                         style = MaterialTheme.typography.labelSmall,
                         color = getStatusColor(booking.status),
+                        fontFamily = Inter,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -206,13 +211,15 @@ fun BookingItemCard(booking: Booking, onClick: () -> Unit = {}) {
             Text(
                 text = "${booking.scheduledDate} at ${booking.scheduledTime}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
+                fontFamily = Inter,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = booking.issueDescription,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
+                fontFamily = Inter,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2
             )
         }

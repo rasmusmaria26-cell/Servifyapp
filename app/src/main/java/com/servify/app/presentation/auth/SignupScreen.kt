@@ -54,21 +54,21 @@ fun SignupScreen(
         }
     }
 
-    // Dark text field colors
-    val darkFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = ServifyBlue,
-        unfocusedBorderColor = DarkBorder,
-        focusedLabelColor = ServifyBlue,
-        unfocusedLabelColor = TextSecondary,
-        cursorColor = ServifyBlue,
-        focusedContainerColor = DarkSurface,
-        unfocusedContainerColor = DarkSurface,
-        focusedTextColor = TextPrimary,
-        unfocusedTextColor = TextPrimary
+    // Text field colors — dynamic to theme
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        cursorColor = MaterialTheme.colorScheme.primary,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
     )
 
     Scaffold(
-        containerColor = DarkBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             AmbientGlow()
@@ -89,9 +89,9 @@ fun SignupScreen(
 
                 Text(
                     text = "Create Account",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = TextPrimary,
-                    fontFamily = Satoshi,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -100,7 +100,8 @@ fun SignupScreen(
                 Text(
                     text = "Join Servify today.",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary
+                    fontFamily = Inter,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -109,10 +110,10 @@ fun SignupScreen(
                 OutlinedTextField(
                     value = uiState.fullName,
                     onValueChange = { viewModel.onFullNameChange(it) },
-                    label = { Text("Full Name") },
+                    label = { Text(text = "Full Name", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     singleLine = true,
                     enabled = !uiState.isLoading
                 )
@@ -123,10 +124,10 @@ fun SignupScreen(
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
-                    label = { Text("Email") },
+                    label = { Text(text = "Email", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
                     enabled = !uiState.isLoading
@@ -138,10 +139,10 @@ fun SignupScreen(
                 OutlinedTextField(
                     value = uiState.phone,
                     onValueChange = { viewModel.onPhoneChange(it) },
-                    label = { Text("Phone Number") },
+                    label = { Text(text = "Phone Number", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
                     enabled = !uiState.isLoading
@@ -149,14 +150,13 @@ fun SignupScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Password
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
-                    label = { Text("Password") },
+                    label = { Text(text = "Password", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
@@ -166,7 +166,7 @@ fun SignupScreen(
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                tint = TextSecondary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -174,11 +174,12 @@ fun SignupScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Role Selection
                 Text(
                     text = "I want to:",
                     style = MaterialTheme.typography.labelLarge,
-                    color = TextPrimary,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
@@ -216,8 +217,9 @@ fun SignupScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = uiState.error!!,
-                        color = ErrorRed,
-                        style = MaterialTheme.typography.bodyMedium
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = Inter
                     )
                 }
 
@@ -228,14 +230,16 @@ fun SignupScreen(
                     Text(
                         text = "Already have an account?",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        fontFamily = Inter,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onNavigateToLogin) {
                         Text(
                             text = "Sign In",
                             style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
-                            color = ServifyBlue
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -252,9 +256,9 @@ fun RoleSelectionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (selected) ServifyBlue.copy(alpha = 0.15f) else DarkSurface
-    val contentColor = if (selected) ServifyBlue else TextSecondary
-    val borderColor = if (selected) ServifyBlue else DarkBorder
+    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val contentColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
 
     val scale by animateFloatAsState(
         targetValue = if (selected) 1.02f else 1f,
@@ -275,8 +279,8 @@ fun RoleSelectionCard(
             text = title,
             style = MaterialTheme.typography.labelLarge,
             color = contentColor,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = Satoshi
+            fontWeight = FontWeight.Bold,
+            fontFamily = SpaceGrotesk
         )
     }
 }

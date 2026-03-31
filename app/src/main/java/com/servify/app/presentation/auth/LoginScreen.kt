@@ -33,6 +33,8 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var forgotPasswordEmail by remember { mutableStateOf("") }
 
     // Fade-in animation
     val contentAlpha = remember { Animatable(0f) }
@@ -49,21 +51,21 @@ fun LoginScreen(
         }
     }
 
-    // Dark text field colors — reusable
-    val darkFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = ServifyBlue,
-        unfocusedBorderColor = DarkBorder,
-        focusedLabelColor = ServifyBlue,
-        unfocusedLabelColor = TextSecondary,
-        cursorColor = ServifyBlue,
-        focusedContainerColor = DarkSurface,
-        unfocusedContainerColor = DarkSurface,
-        focusedTextColor = TextPrimary,
-        unfocusedTextColor = TextPrimary
+    // Text field colors — dynamic to theme
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        cursorColor = MaterialTheme.colorScheme.primary,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
     )
 
     Scaffold(
-        containerColor = DarkBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             // Ambient glow at top
@@ -83,9 +85,9 @@ fun LoginScreen(
                 // Header
                 Text(
                     text = "Welcome Back",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = TextPrimary,
-                    fontFamily = Satoshi,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -94,7 +96,8 @@ fun LoginScreen(
                 Text(
                     text = "Sign in to continue managing your services.",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary
+                    fontFamily = Inter,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(48.dp))
@@ -103,10 +106,10 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
-                    label = { Text("Email") },
+                    label = { Text(text = "Email", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
                     enabled = !uiState.isLoading
@@ -118,10 +121,10 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
-                    label = { Text("Password") },
+                    label = { Text(text = "Password", fontFamily = Inter) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = darkFieldColors,
+                    colors = fieldColors,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
@@ -131,7 +134,7 @@ fun LoginScreen(
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                 contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                tint = TextSecondary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -139,11 +142,13 @@ fun LoginScreen(
 
                 // Forgot Password
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    TextButton(onClick = { /* TODO */ }) {
+                    TextButton(onClick = { showForgotPasswordDialog = true }) {
                         Text(
                             text = "Forgot Password?",
                             style = MaterialTheme.typography.labelLarge,
-                            color = ServifyBlue
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -162,8 +167,9 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = uiState.error!!,
-                        color = ErrorRed,
-                        style = MaterialTheme.typography.bodyMedium
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = Inter
                     )
                 }
 
@@ -174,18 +180,64 @@ fun LoginScreen(
                     Text(
                         text = "Don't have an account?",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        fontFamily = Inter,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onNavigateToSignup) {
                         Text(
                             text = "Sign Up",
                             style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
-                            color = ServifyBlue
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
         }
+    }
+    
+    if (showForgotPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { showForgotPasswordDialog = false },
+            title = { Text("Reset Password") },
+            text = {
+                OutlinedTextField(
+                    value = forgotPasswordEmail,
+                    onValueChange = { forgotPasswordEmail = it },
+                    label = { Text("Enter your email") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onForgotPassword(forgotPasswordEmail)
+                        showForgotPasswordDialog = false
+                    }
+                ) {
+                    Text("Send Reset Link")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForgotPasswordDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    
+    if (uiState.passwordResetSent) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onPasswordResetHandled() },
+            title = { Text("Success") },
+            text = { Text("Check your email for a reset link.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onPasswordResetHandled() }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }

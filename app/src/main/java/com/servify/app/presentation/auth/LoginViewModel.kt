@@ -46,15 +46,36 @@ class LoginViewModel @Inject constructor(
                     }
                 }
                 .onFailure { error ->
-                    Log.e("LoginViewModel", "Login failure", error)
+                    Log.e("LoginViewModel", "Login failure caught in ViewModel: ${error.javaClass.simpleName} - ${error.message}")
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = error.message ?: "Login failed"
+                            error = "Connection Error: ${error.message ?: "Check your internet."}"
                         )
                     }
                 }
         }
+    }
+    
+    fun onForgotPassword(email: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            authRepository.resetPassword(email)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(isLoading = false, passwordResetSent = true)
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Reset failed: ${error.message}")
+                    }
+                }
+        }
+    }
+
+    fun onPasswordResetHandled() {
+        _uiState.update { it.copy(passwordResetSent = false) }
     }
 }
 
@@ -64,5 +85,6 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false,
     val userRole: String? = null,
-    val error: String? = null
+    val error: String? = null,
+    val passwordResetSent: Boolean = false
 )
