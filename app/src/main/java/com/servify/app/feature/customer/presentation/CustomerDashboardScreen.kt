@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 fun CustomerDashboardScreen(
     selectedTab: Int,
     viewModel: CustomerDashboardViewModel = hiltViewModel(),
-    onNavigateToBooking: () -> Unit = {},
+    onNavigateToBooking: (String?) -> Unit = {},
     onNavigateToRepairRequest: (String?) -> Unit = {},
     onNavigateToQuotes: (String) -> Unit = {},
     onNavigateToActiveRepair: (String) -> Unit = {},
@@ -105,7 +105,7 @@ fun CustomerDashboardScreen(
                 exit = scaleOut() + fadeOut()
             ) {
                 FloatingActionButton(
-                    onClick = if (selectedTab == 2) { { onNavigateToRepairRequest(null) } } else onNavigateToBooking,
+                    onClick = if (selectedTab == 2) { { onNavigateToRepairRequest(null) } } else { { onNavigateToBooking(null) } },
                     containerColor = MaterialTheme.colorScheme.onBackground, // High-Contrast Premium FAB
                     contentColor = MaterialTheme.colorScheme.background,
                     shape = RoundedCornerShape(18.dp),

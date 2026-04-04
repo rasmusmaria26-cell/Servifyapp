@@ -50,11 +50,18 @@ import com.google.android.gms.location.LocationServices
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateBookingScreen(
+    initialCategory: String? = null,
     viewModel: CreateBookingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onBookingCreated: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(initialCategory) {
+        if (initialCategory != null && uiState.selectedServiceCategory == null) {
+            viewModel.onServiceCategorySelected(initialCategory)
+        }
+    }
 
     LaunchedEffect(uiState.bookingCreated) {
         if (uiState.bookingCreated) {
@@ -229,7 +236,7 @@ fun IssueDescriptionStep(
     onImagesSelected: (List<Bitmap>) -> Unit,
     onNextClick: () -> Unit
 ) {
-    val categories = listOf("Home Appliances", "Electronics", "Vehicles", "Electrical", "Plumbing", "Carpentry")
+    val categories = listOf("Home Appliances", "Electronics", "Vehicles", "Electrical", "Plumbing", "Carpentry", "AC / HVAC", "More")
 
     val darkFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = ServifyBlue,
@@ -297,13 +304,59 @@ fun IssueDescriptionStep(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (selectedCategory != null) {
+            val subIssues = when (selectedCategory) {
+                "Electronics" -> listOf("Screen / Display", "Battery / Power", "Audio / Speaker", "Software", "Water Damage", "Other")
+                "Electrical" -> listOf("Wiring / Short Circuit", "Appliance Repair", "Switchboard", "Lighting", "Inverter", "Other")
+                "Plumbing" -> listOf("Pipe Leakage", "Faucet / Tap", "Drain Blockage", "Water Heater", "Toilet/Sanitary", "Other")
+                "AC / HVAC" -> listOf("Not Cooling", "Gas Leak", "Making Noise", "Water Dripping", "Coil/Compressor", "Other")
+                "Carpentry" -> listOf("Furniture Repair", "Door/Window", "Wood Polishing", "Custom Assembly", "Lock/Hinge", "Other")
+                "Home Appliances" -> listOf("Washing Machine", "Refrigerator", "Microwave", "Dishwasher", "Water Purifier", "Other")
+                "Vehicles" -> listOf("Two-Wheeler", "Four-Wheeler", "Tire / Puncture", "Engine / Oil", "Electricals", "Other")
+                else -> listOf("Performance Issue", "Physical Damage", "Part Replacement", "Diagnostic Check", "Other")
+            }
+
+            Text(
+                text = "What is the main issue?",
+                style = MaterialTheme.typography.titleSmall,
+                fontFamily = Inter,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                subIssues.forEach { issue ->
+                    SuggestionChip(
+                        onClick = { onDescriptionChange(issue) },
+                        label = { Text(issue, fontFamily = Inter) },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = TextSecondary
+                        ),
+                        border = SuggestionChipDefaults.suggestionChipBorder(
+                            enabled = true,
+                            borderColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text("Issue Description") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp),
+                .height(90.dp),
             shape = RoundedCornerShape(14.dp),
             colors = darkFieldColors
         )

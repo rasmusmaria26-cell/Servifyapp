@@ -198,8 +198,8 @@ fun ServifyNavHost(
                 CustomerDashboardScreen(
                     selectedTab = 0,
                     viewModel = viewModel,
-                    onNavigateToBooking = { navController.navigate(ServifyRoutes.CREATE_BOOKING) },
-                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.POST_REPAIR_REQUEST) },
+                    onNavigateToBooking = { cat -> navController.navigate(ServifyRoutes.createBooking(cat)) },
+                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.postRepairRequest()) },
                     onNavigateToQuotes = { id -> navController.navigate(ServifyRoutes.quotes(id)) },
                     onNavigateToActiveRepair = { id -> navController.navigate(ServifyRoutes.activeRepair(id)) },
                     onNavigateToBookingDetail = { id -> navController.navigate(ServifyRoutes.bookingDetail(id)) },
@@ -252,8 +252,8 @@ fun ServifyNavHost(
                 CustomerDashboardScreen(
                     selectedTab = 1,
                     viewModel = viewModel,
-                    onNavigateToBooking = { navController.navigate(ServifyRoutes.CREATE_BOOKING) },
-                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.POST_REPAIR_REQUEST) },
+                    onNavigateToBooking = { cat -> navController.navigate(ServifyRoutes.createBooking(cat)) },
+                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.postRepairRequest()) },
                     onNavigateToQuotes = { id -> navController.navigate(ServifyRoutes.quotes(id)) },
                     onNavigateToActiveRepair = { id -> navController.navigate(ServifyRoutes.activeRepair(id)) },
                     onNavigateToBookingDetail = { id -> navController.navigate(ServifyRoutes.bookingDetail(id)) },
@@ -306,8 +306,8 @@ fun ServifyNavHost(
                 CustomerDashboardScreen(
                     selectedTab = 2,
                     viewModel = viewModel,
-                    onNavigateToBooking = { navController.navigate(ServifyRoutes.CREATE_BOOKING) },
-                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.POST_REPAIR_REQUEST) },
+                    onNavigateToBooking = { cat -> navController.navigate(ServifyRoutes.createBooking(cat)) },
+                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.postRepairRequest()) },
                     onNavigateToQuotes = { id -> navController.navigate(ServifyRoutes.quotes(id)) },
                     onNavigateToActiveRepair = { id -> navController.navigate(ServifyRoutes.activeRepair(id)) },
                     onNavigateToBookingDetail = { id -> navController.navigate(ServifyRoutes.bookingDetail(id)) },
@@ -360,8 +360,8 @@ fun ServifyNavHost(
                 CustomerDashboardScreen(
                     selectedTab = 3,
                     viewModel = viewModel,
-                    onNavigateToBooking = { navController.navigate(ServifyRoutes.CREATE_BOOKING) },
-                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.POST_REPAIR_REQUEST) },
+                    onNavigateToBooking = { cat -> navController.navigate(ServifyRoutes.createBooking(cat)) },
+                    onNavigateToRepairRequest = { navController.navigate(ServifyRoutes.postRepairRequest()) },
                     onNavigateToQuotes = { id -> navController.navigate(ServifyRoutes.quotes(id)) },
                     onNavigateToActiveRepair = { id -> navController.navigate(ServifyRoutes.activeRepair(id)) },
                     onNavigateToBookingDetail = { id -> navController.navigate(ServifyRoutes.bookingDetail(id)) },
@@ -394,8 +394,17 @@ fun ServifyNavHost(
 
         // --- Customer Screens ---
 
-        composable(ServifyRoutes.CREATE_BOOKING) {
+        composable(
+            route = ServifyRoutes.CREATE_BOOKING,
+            arguments = listOf(navArgument("category") { 
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category")
             CreateBookingScreen(
+                initialCategory  = category,
                 onNavigateBack   = { navController.popBackStack() },
                 onBookingCreated = { navController.popBackStack() }
             )

@@ -40,7 +40,7 @@ val BadgeGreenText = Color(0xFF065F46)
 @Composable
 fun LightHomeContent(
     uiState: CustomerDashboardUiState,
-    onNavigateToBooking: () -> Unit,
+    onNavigateToBooking: (String?) -> Unit,
     onNavigateToRepairRequest: (String?) -> Unit,
     onNavigateToQuotes: (String) -> Unit,
     onNavigateToActiveRepair: (String) -> Unit
@@ -208,15 +208,15 @@ fun LightHomeContent(
                 
                 // Grid of 6 categories
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CatTile("📱", "Electronics", Color(0xFFEFF6FF), Modifier.weight(1f)) { onNavigateToRepairRequest("Electronics") }
-                    CatTile("⚡", "Electrical", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToRepairRequest("Electrical") }
-                    CatTile("🔧", "Plumbing", Color(0xFFF0FDF4), Modifier.weight(1f)) { onNavigateToRepairRequest("Plumbing") }
+                    CatTile("📱", "Electronics", Color(0xFFEFF6FF), Modifier.weight(1f)) { onNavigateToBooking("Electronics") }
+                    CatTile("⚡", "Electrical", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToBooking("Electrical") }
+                    CatTile("🔧", "Plumbing", Color(0xFFF0FDF4), Modifier.weight(1f)) { onNavigateToBooking("Plumbing") }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CatTile("❄️", "AC / HVAC", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToRepairRequest("AC / HVAC") }
-                    CatTile("🪵", "Carpentry", Color(0xFFFAF5FF), Modifier.weight(1f)) { onNavigateToRepairRequest("Carpentry") }
-                    CatTile("➕", "More", Color(0xFFF8FAFC), Modifier.weight(1f)) { onNavigateToRepairRequest("More") }
+                    CatTile("❄️", "AC / HVAC", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToBooking("AC / HVAC") }
+                    CatTile("🪵", "Carpentry", Color(0xFFFAF5FF), Modifier.weight(1f)) { onNavigateToBooking("Carpentry") }
+                    CatTile("➕", "More", Color(0xFFF8FAFC), Modifier.weight(1f)) { onNavigateToBooking("More") }
                 }
                 
                 Spacer(modifier = Modifier.height(20.dp))
