@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.designsystem.ServifyButton
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 
 private val ESTIMATE_OPTIONS = listOf(
     "Under 1 hour", "1–2 hours", "Half a day",

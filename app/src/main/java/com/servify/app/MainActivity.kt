@@ -16,7 +16,7 @@ import com.servify.app.core.UserSession
 import com.servify.app.navigation.ServifyBottomNavBar
 import com.servify.app.navigation.ServifyNavHost
 import com.servify.app.navigation.ServifyRoutes
-import com.servify.app.ui.theme.ServifyTheme
+import com.servify.app.designsystem.theme.ServifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**

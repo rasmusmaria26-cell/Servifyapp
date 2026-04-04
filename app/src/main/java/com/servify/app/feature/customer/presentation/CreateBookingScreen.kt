@@ -35,7 +35,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.servify.app.feature.vendor.domain.Vendor
 import com.servify.app.designsystem.ServifyButton
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.viewinterop.AndroidView
@@ -355,7 +355,7 @@ fun VendorSelectionStep(
     vendors: List<Vendor>,
     isLoading: Boolean,
     isLoadingDiagnosis: Boolean,
-    aiDiagnosis: com.servify.app.data.model.AIDiagnosis?,
+    aiDiagnosis: com.servify.app.core.model.AIDiagnosis?,
     selectedVendor: Vendor?,
     onVendorSelected: (Vendor) -> Unit,
     onNextClick: () -> Unit
@@ -919,7 +919,7 @@ fun LabelValueRow(label: String, value: String, isBold: Boolean = false) {
 }
 
 @Composable
-fun DiagnosisSummaryChip(diagnosis: com.servify.app.data.model.AIDiagnosis) {
+fun DiagnosisSummaryChip(diagnosis: com.servify.app.core.model.AIDiagnosis) {
     val urgencyColor = when (diagnosis.urgency) {
         "High" -> ErrorRed
         "Medium" -> AmberAccent

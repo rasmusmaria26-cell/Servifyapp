@@ -16,7 +16,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.feature.marketplace.domain.BookingState
-import com.servify.app.presentation.marketplace.ActionState
+
 import com.servify.app.feature.marketplace.presentation.MarketplaceViewModel
 
 @Composable

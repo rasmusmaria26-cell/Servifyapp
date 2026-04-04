@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.servify.app.feature.customer.data.Quote
 import com.servify.app.feature.customer.data.RepairRequest
 import com.servify.app.feature.vendor.domain.Vendor
-import com.servify.app.data.repository.RepairRepository
+import com.servify.app.feature.customer.data.RepairRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

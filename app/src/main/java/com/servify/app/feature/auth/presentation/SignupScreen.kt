@@ -24,9 +24,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.servify.app.presentation.components.AmbientGlow
+import com.servify.app.designsystem.AmbientGlow
 import com.servify.app.designsystem.ServifyButton
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

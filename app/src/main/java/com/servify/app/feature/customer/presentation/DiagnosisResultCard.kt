@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.servify.app.core.model.AIDiagnosis
-import com.servify.app.ui.theme.Inter
-import com.servify.app.ui.theme.SpaceGrotesk
+import com.servify.app.designsystem.theme.Inter
+import com.servify.app.designsystem.theme.SpaceGrotesk
 
 @Composable
 fun DiagnosisResultCard(diagnosis: AIDiagnosis) {

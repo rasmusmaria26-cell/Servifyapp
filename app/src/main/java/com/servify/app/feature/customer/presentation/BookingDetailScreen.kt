@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.feature.customer.data.Booking
 import com.servify.app.designsystem.ServifyButton
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

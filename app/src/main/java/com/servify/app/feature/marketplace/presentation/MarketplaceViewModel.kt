@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servify.app.feature.marketplace.domain.BookingState
 import com.servify.app.feature.marketplace.domain.Quote
-import com.servify.app.domain.model.marketplace.RequestStatus
+import com.servify.app.feature.marketplace.domain.RequestStatus
 import com.servify.app.feature.marketplace.domain.MarketplaceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.currentCoroutineContext

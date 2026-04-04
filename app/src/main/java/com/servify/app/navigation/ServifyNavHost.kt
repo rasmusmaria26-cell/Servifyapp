@@ -114,7 +114,7 @@ fun ServifyNavHost(
         }
 
         composable(ServifyRoutes.SIGNUP) {
-            com.servify.app.presentation.auth.SignupScreen(
+            com.servify.app.feature.auth.presentation.SignupScreen(
                 onNavigateToLogin  = { navController.popBackStack() },
                 onSignupSuccess    = { role ->
                     if (role == "customer") {
@@ -403,7 +403,7 @@ fun ServifyNavHost(
 
         composable(ServifyRoutes.BOOKING_DETAIL) { backStackEntry ->
             val bookingId = backStackEntry.arguments?.getString("bookingId") ?: return@composable
-            val viewModel = hiltViewModel<com.servify.app.presentation.customer.BookingDetailViewModel>()
+            val viewModel = hiltViewModel<com.servify.app.feature.customer.presentation.BookingDetailViewModel>()
             
             androidx.compose.runtime.LaunchedEffect(bookingId) {
                 viewModel.fetchBooking(bookingId)

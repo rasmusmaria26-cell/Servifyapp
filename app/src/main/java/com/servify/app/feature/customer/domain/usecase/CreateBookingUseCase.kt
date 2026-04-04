@@ -3,8 +3,8 @@ package com.servify.app.feature.customer.domain.usecase
 import com.servify.app.core.model.AIDiagnosis
 import com.servify.app.feature.customer.data.Booking
 import com.servify.app.feature.customer.data.ServiceCategory
-import com.servify.app.data.repository.AuthRepository
-import com.servify.app.data.repository.BookingRepository
+import com.servify.app.feature.auth.data.AuthRepository
+import com.servify.app.feature.customer.data.BookingRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.designsystem.ServifyButton
 import com.servify.app.designsystem.ShimmerItem
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 import kotlinx.coroutines.delay
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.platform.LocalContext

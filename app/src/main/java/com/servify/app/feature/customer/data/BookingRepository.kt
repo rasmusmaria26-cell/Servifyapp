@@ -18,9 +18,9 @@ class BookingRepository @Inject constructor(
     private val supabase: io.github.jan.supabase.SupabaseClient
 ) {
 
-    suspend fun getServices(): Result<List<com.servify.app.data.model.Service>> = withContext(Dispatchers.IO) {
+    suspend fun getServices(): Result<List<com.servify.app.feature.customer.data.Service>> = withContext(Dispatchers.IO) {
         try {
-            val services = supabase.from("services").select().decodeList<com.servify.app.data.model.Service>()
+            val services = supabase.from("services").select().decodeList<com.servify.app.feature.customer.data.Service>()
             Result.success(services)
         } catch (e: Exception) {
             Log.e("BookingRepository", "Failed to fetch services", e)
@@ -28,9 +28,9 @@ class BookingRepository @Inject constructor(
         }
     }
 
-    suspend fun getCategories(): Result<List<com.servify.app.data.model.ServiceCategory>> = withContext(Dispatchers.IO) {
+    suspend fun getCategories(): Result<List<com.servify.app.feature.customer.data.ServiceCategory>> = withContext(Dispatchers.IO) {
         try {
-            val categories = supabase.from("service_categories").select().decodeList<com.servify.app.data.model.ServiceCategory>()
+            val categories = supabase.from("service_categories").select().decodeList<com.servify.app.feature.customer.data.ServiceCategory>()
             Result.success(categories)
         } catch (e: Exception) {
             Log.e("BookingRepository", "Failed to fetch categories", e)
@@ -133,7 +133,7 @@ class BookingRepository @Inject constructor(
                 
             val vendorProfile = try {
                 if (booking.vendorId != null) {
-                    supabase.from("profiles").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.data.model.ProfileDto>()
+                    supabase.from("profiles").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.feature.auth.domain.ProfileDto>()
                 } else null
             } catch(e: Exception) { 
                 null 
@@ -141,7 +141,7 @@ class BookingRepository @Inject constructor(
             
             val vendorDetails = try {
                 if (booking.vendorId != null) {
-                    supabase.from("vendors").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.data.model.Vendor>()
+                    supabase.from("vendors").select { filter { eq("id", booking.vendorId) } }.decodeSingleOrNull<com.servify.app.feature.vendor.domain.Vendor>()
                 } else null
             } catch(e: Exception) { 
                 null 

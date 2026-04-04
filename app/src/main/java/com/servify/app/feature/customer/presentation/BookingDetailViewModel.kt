@@ -3,7 +3,7 @@ package com.servify.app.feature.customer.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servify.app.feature.customer.data.Booking
-import com.servify.app.data.repository.BookingRepository
+import com.servify.app.feature.customer.data.BookingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

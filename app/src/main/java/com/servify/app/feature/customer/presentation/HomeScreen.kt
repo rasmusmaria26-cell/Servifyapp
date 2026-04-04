@@ -16,12 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.servify.app.ui.theme.BackgroundColor
-import com.servify.app.ui.theme.BlackPrimary
-import com.servify.app.ui.theme.AmberAccent
-import com.servify.app.ui.theme.ErrorRed
-import com.servify.app.ui.theme.Gray50
-import com.servify.app.ui.theme.Gray500
+import com.servify.app.designsystem.theme.BackgroundColor
+import com.servify.app.designsystem.theme.BlackPrimary
+import com.servify.app.designsystem.theme.AmberAccent
+import com.servify.app.designsystem.theme.ErrorRed
+import com.servify.app.designsystem.theme.Gray50
+import com.servify.app.designsystem.theme.Gray500
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

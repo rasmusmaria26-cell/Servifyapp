@@ -2,6 +2,7 @@ package com.servify.app.feature.customer.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import com.servify.app.feature.vendor.domain.Vendor
 
 // Lifecycle of a vendor quote
 // PENDING  → submitted, waiting for user decision

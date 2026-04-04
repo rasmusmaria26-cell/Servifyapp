@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.feature.customer.data.Booking
-import com.servify.app.ui.theme.*
-import com.servify.app.presentation.components.AmbientGlow
+import com.servify.app.designsystem.theme.*
+import com.servify.app.designsystem.AmbientGlow
 import com.servify.app.core.UserSession
 import com.servify.app.core.AppMode
 

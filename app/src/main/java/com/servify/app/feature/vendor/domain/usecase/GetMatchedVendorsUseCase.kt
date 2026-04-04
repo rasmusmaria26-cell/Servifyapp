@@ -1,7 +1,7 @@
 package com.servify.app.feature.vendor.domain.usecase
 
 import com.servify.app.feature.vendor.domain.Vendor
-import com.servify.app.data.repository.VendorRepository
+import com.servify.app.feature.vendor.data.VendorRepository
 import javax.inject.Inject
 
 class GetMatchedVendorsUseCase @Inject constructor(

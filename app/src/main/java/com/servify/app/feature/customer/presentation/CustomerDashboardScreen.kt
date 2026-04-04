@@ -28,9 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.servify.app.ui.theme.*
-import com.servify.app.presentation.components.AmbientGlow
-import com.servify.app.presentation.components.ServifySearchField
+import com.servify.app.designsystem.theme.*
+import com.servify.app.designsystem.AmbientGlow
+import com.servify.app.designsystem.ServifySearchField
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

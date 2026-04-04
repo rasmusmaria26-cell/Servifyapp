@@ -41,7 +41,7 @@ class VendorRepository @Inject constructor(
                             eq("name", categoryName) 
                         }
                     }
-                    .decodeSingleOrNull<com.servify.app.data.model.ServiceCategory>()
+                    .decodeSingleOrNull<com.servify.app.feature.customer.data.ServiceCategory>()
                 category?.id
             } catch (e: Exception) {
                 Log.e("VendorRepository", "Failed to resolve category name: $categoryName", e)

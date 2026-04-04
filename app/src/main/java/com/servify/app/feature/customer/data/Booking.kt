@@ -3,8 +3,9 @@ package com.servify.app.feature.customer.data
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.servify.app.feature.customer.data.Service
-import com.servify.app.data.model.ProfileDto
+import com.servify.app.feature.auth.domain.ProfileDto
 import com.servify.app.feature.vendor.domain.Vendor
+import com.servify.app.core.model.AIDiagnosis
 
 @Serializable
 data class Booking(
@@ -43,14 +44,4 @@ data class Booking(
     val vendorDetails: Vendor? = null
 )
 
-@Serializable
-data class AIDiagnosis(
-    val diagnosis: String,
-    val estimatedCost: String,
-    val estimatedTime: String,
-    val recommendedService: String,
-    val urgency: String,
-    val urgencyReason: String = "",
-    val possibleCauses: List<String>,
-    val customerAdvice: String = ""
-)
+

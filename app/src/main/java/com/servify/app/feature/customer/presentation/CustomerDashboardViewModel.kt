@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.servify.app.feature.customer.data.Booking
 import com.servify.app.feature.customer.data.RepairRequest
 import com.servify.app.feature.auth.domain.UserProfile
-import com.servify.app.data.repository.AuthRepository
-import com.servify.app.data.repository.BookingRepository
-import com.servify.app.data.repository.RepairRepository
+import com.servify.app.feature.auth.data.AuthRepository
+import com.servify.app.feature.customer.data.BookingRepository
+import com.servify.app.feature.customer.data.RepairRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

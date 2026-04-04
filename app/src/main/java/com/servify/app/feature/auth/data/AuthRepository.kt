@@ -41,7 +41,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.ProfileDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.ProfileDto>()
             Log.d("AuthRepository", "Profile fetched: $profileDto")
             
             // Fetch user role from 'user_roles' table
@@ -52,7 +52,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.UserRoleDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.UserRoleDto>()
             Log.d("AuthRepository", "Role fetched: $roleDto")
             
             val profile = UserProfile(
@@ -115,7 +115,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.ProfileDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.ProfileDto>()
                 
             // Fetch user role
             val roleDto = supabase.from("user_roles")
@@ -124,7 +124,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.UserRoleDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.UserRoleDto>()
                 
             val profile = UserProfile(
                 id = profileDto.id,
@@ -173,7 +173,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.ProfileDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.ProfileDto>()
                 
             val roleDto = supabase.from("user_roles")
                 .select {
@@ -181,7 +181,7 @@ class AuthRepository @Inject constructor(
                         eq("user_id", userId)
                     }
                 }
-                .decodeSingle<com.servify.app.data.model.UserRoleDto>()
+                .decodeSingle<com.servify.app.feature.auth.domain.UserRoleDto>()
                 
             UserProfile(
                 id = profileDto.id,

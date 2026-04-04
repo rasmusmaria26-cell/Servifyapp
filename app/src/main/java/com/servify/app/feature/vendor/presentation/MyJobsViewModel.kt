@@ -3,9 +3,9 @@ package com.servify.app.feature.vendor.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servify.app.feature.customer.data.RepairRequest
-import com.servify.app.data.repository.AuthRepository
-import com.servify.app.data.repository.RepairRepository
-import com.servify.app.data.repository.VendorRepository
+import com.servify.app.feature.auth.data.AuthRepository
+import com.servify.app.feature.customer.data.RepairRepository
+import com.servify.app.feature.vendor.data.VendorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.servify.app.feature.customer.data.Booking
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

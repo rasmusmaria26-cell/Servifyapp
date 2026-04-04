@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.feature.customer.data.RepairRequest
-import com.servify.app.ui.theme.*
+import com.servify.app.designsystem.theme.*
 
 @Composable
 fun MyJobsContent(
