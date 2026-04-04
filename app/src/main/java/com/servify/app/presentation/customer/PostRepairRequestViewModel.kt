@@ -3,7 +3,9 @@ package com.servify.app.presentation.customer
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.servify.app.data.model.AIDiagnosis
 import com.servify.app.data.model.RepairRequest
+import com.servify.app.data.remote.GeminiApiClient
 import com.servify.app.data.repository.AuthRepository
 import com.servify.app.data.repository.RepairRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,13 +35,19 @@ data class PostRepairUiState(
     // Submission state
     val isSubmitting: Boolean = false,
     val error: String? = null,
-    val submittedRequestId: String? = null   // non-null → success
+    val submittedRequestId: String? = null,   // non-null → success
+
+    // AI Diagnosis state
+    val diagnosis: AIDiagnosis? = null,
+    val isDiagnosing: Boolean = false,
+    val diagnosisError: String? = null
 )
 
 @HiltViewModel
 class PostRepairRequestViewModel @Inject constructor(
     private val repairRepository: RepairRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val geminiApiClient: GeminiApiClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PostRepairUiState())
@@ -54,8 +62,8 @@ class PostRepairRequestViewModel @Inject constructor(
     fun onSeverity(v: String)       = _uiState.update { it.copy(severity = v) }
     fun onDescription(v: String)    = _uiState.update { it.copy(description = v) }
     fun onAddress(v: String)        = _uiState.update { it.copy(address = v) }
-    fun onLocationSelected(lat: Double, lng: Double) = _uiState.update { 
-        it.copy(latitude = lat, longitude = lng) 
+    fun onLocationSelected(lat: Double, lng: Double) = _uiState.update {
+        it.copy(latitude = lat, longitude = lng)
     }
 
     fun addMediaUri(uri: Uri) = _uiState.update {
@@ -108,7 +116,31 @@ class PostRepairRequestViewModel @Inject constructor(
 
             repairRepository.createRepairRequest(request)
                 .onSuccess { created ->
-                    _uiState.update { it.copy(isSubmitting = false, submittedRequestId = created.id) }
+                    // Set submittedRequestId immediately (navigation key) and start diagnosing
+                    _uiState.update {
+                        it.copy(
+                            isSubmitting = false,
+                            submittedRequestId = created.id,
+                            isDiagnosing = true
+                        )
+                    }
+
+                    // Run AI diagnosis against the submitted description & category
+                    geminiApiClient.getDiagnosis(
+                        description = s.description,
+                        serviceCategory = s.issueCategory
+                    )
+                        .onSuccess { result ->
+                            _uiState.update { it.copy(isDiagnosing = false, diagnosis = result) }
+                        }
+                        .onFailure { e ->
+                            _uiState.update {
+                                it.copy(
+                                    isDiagnosing = false,
+                                    diagnosisError = e.message ?: "Diagnosis unavailable."
+                                )
+                            }
+                        }
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isSubmitting = false, error = e.message ?: "Submission failed.") }

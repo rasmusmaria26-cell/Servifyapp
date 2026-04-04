@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.presentation.components.ServifyButton
+import com.servify.app.presentation.components.ShimmerItem
 import com.servify.app.ui.theme.*
 import kotlinx.coroutines.delay
 import androidx.compose.ui.viewinterop.AndroidView
@@ -68,10 +69,8 @@ fun PostRepairRequestScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Navigate away when submission succeeds
-    LaunchedEffect(uiState.submittedRequestId) {
-        uiState.submittedRequestId?.let { onSubmitted(it) }
-    }
+    // Guard against double-navigation if the user somehow taps Continue twice
+    var hasNavigated by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -355,21 +354,83 @@ fun PostRepairRequestScreen(
             }
 
             // ── CTA ───────────────────────────────────────────────────────────
-            ServifyButton(
-                text = if (uiState.isSubmitting) "Posting Request…" else "Post Request — Get Quotes",
-                onClick = viewModel::submit,
-                isLoading = uiState.isSubmitting,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Show the submit button only while the form hasn't been submitted yet
+            if (uiState.submittedRequestId == null) {
+                ServifyButton(
+                    text = if (uiState.isSubmitting) "Posting Request…" else "Post Request — Get Quotes",
+                    onClick = viewModel::submit,
+                    isLoading = uiState.isSubmitting,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            // Note about 60-min window
-            Text(
-                text = "🕐 Vendors have 60 minutes to submit quotes after you post.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = Inter,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+                // Note about 60-min window
+                Text(
+                    text = "🕐 Vendors have 60 minutes to submit quotes after you post.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = Inter,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+            }
+
+            // ── Post-submission: diagnosis shimmer / card / continue ───────────
+            if (uiState.submittedRequestId != null) {
+
+                // 1. Shimmer while the AI call is in flight
+                if (uiState.isDiagnosing) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            text = "Analysing your issue with AI…",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontFamily = Inter,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        ShimmerItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                        )
+                    }
+                }
+
+                // 2. Diagnosis card once available
+                uiState.diagnosis?.let { diagnosis ->
+                    DiagnosisResultCard(diagnosis = diagnosis)
+                }
+
+                // 3. Error fallback (diagnosis unavailable) — still show Continue
+                if (uiState.diagnosisError != null && uiState.diagnosis == null && !uiState.isDiagnosing) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Diagnosis unavailable. Continue to see vendor quotes.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontFamily = Inter,
+                            modifier = Modifier.padding(14.dp)
+                        )
+                    }
+                }
+
+                // 4. Continue button — shown once diagnosing is done (result or error)
+                if (!uiState.isDiagnosing) {
+                    Spacer(Modifier.height(4.dp))
+                    ServifyButton(
+                        text = "Continue →",
+                        onClick = {
+                            if (!hasNavigated) {
+                                hasNavigated = true
+                                onSubmitted(uiState.submittedRequestId!!)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(32.dp))
+                }
+            }
         }
     }
 }

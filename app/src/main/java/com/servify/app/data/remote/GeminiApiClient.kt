@@ -14,12 +14,12 @@ import javax.inject.Singleton
 class GeminiApiClient @Inject constructor() {
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-2.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY,
         generationConfig = generationConfig {
             temperature = 0.2f
             topP = 0.8f
-            maxOutputTokens = 1024
+            maxOutputTokens = 4096
         }
     )
 
@@ -35,35 +35,61 @@ class GeminiApiClient @Inject constructor() {
     ): Result<AIDiagnosis> {
         return try {
             val prompt = """
-                You are an expert field technician with 20 years of experience diagnosing and repairing home appliances, electronics, vehicles, plumbing, electrical systems, and carpentry.
+You are SERVIFY-AI, an expert diagnostic engine built into the Servify+ platform — a professional repair aggregation service operating in India.
 
-                A customer has submitted a repair request through the Servify app. Your job is to analyze their issue description and any photos provided, then return a structured diagnosis that helps them understand the problem and sets accurate expectations before a technician arrives.
+You have the combined knowledge of:
+- A senior electronics repair technician (15+ years, specialising in smartphones, laptops, TVs, and home appliances)
+- A licensed electrician familiar with Indian household wiring standards (IS 732)
+- A certified AC/HVAC technician familiar with BEE star-rated equipment common in India
+- A plumber familiar with CPVC/UPVC pipe systems used in Indian residential buildings
+- A carpenter familiar with modular furniture and Indian teak/plywood construction
 
-                SERVICE CATEGORY: $serviceCategory
-                CUSTOMER DESCRIPTION: "$description"
+A customer has submitted a repair request. Your job is to deliver a precise, trustworthy, and actionable pre-visit diagnosis — the kind a senior technician would give after a 5-minute phone consultation.
 
-                ANALYSIS INSTRUCTIONS:
-                - If photos are provided, examine them carefully for visible damage, wear, corrosion, incorrect installation, or any anomalies
-                - Cross-reference what you see in the photos with what the customer described
-                - If the description and photos contradict each other, trust the photos
-                - Be specific — avoid vague terms like "may need repair". Say exactly what is likely wrong
-                - Cost estimates must be realistic for India (INR), accounting for parts and labour
-                - Urgency must reflect genuine safety risk: High = safety hazard or will cause further damage if ignored, Medium = should be fixed within a week, Low = cosmetic or convenience issue
+═══════════════════════════════════════
+REQUEST DETAILS
+═══════════════════════════════════════
+SERVICE CATEGORY : $serviceCategory
+DEVICE TYPE      : ${description.substringBefore(" ").ifBlank { "Not specified" }}
+CUSTOMER DESCRIPTION:
+"$description"
+═══════════════════════════════════════
 
-                RESPONSE FORMAT:
-                Return ONLY a valid JSON object. No markdown, no code blocks, no explanation outside the JSON.
+DIAGNOSTIC INSTRUCTIONS:
+1. Read the description carefully. Identify the PRIMARY failure symptom vs secondary symptoms.
+2. If images are provided — examine every detail: burn marks, corrosion, physical damage, water stains, display artifacts, loose connections, or anything abnormal. Prioritise what you see in photos over what the customer wrote if they conflict.
+3. Apply the most likely diagnosis first (highest probability), then list alternatives.
+4. Cost estimates must be realistic for INDIA in 2024-2025 — account for local spare parts market, labour rates in Tier-2/Tier-3 cities, and GST. Do not give MRP-level estimates.
+5. Urgency rules you MUST follow:
+   - HIGH   → safety risk (electrical hazard, gas leak risk, structural failure, data loss imminent) OR will cause cascading damage if ignored beyond 48 hours
+   - MEDIUM → device/system unusable or significantly degraded, no immediate safety risk, fix within 5-7 days
+   - LOW    → cosmetic issue, minor inconvenience, works partially, can wait 2-4 weeks
+6. customerAdvice must be ONE specific, practical action the customer can do RIGHT NOW — not generic advice like "unplug it". Example: "Remove the battery if it's swollen", "Switch off the MCB for that circuit", "Place a bucket under the pipe joint and wrap with plumber's tape temporarily".
+7. If the issue sounds dangerous (sparking, burning smell, water near electrical, gas smell) — set urgency to HIGH and make customerAdvice a safety instruction first.
 
-                {
-                  "diagnosis": "A clear 1-2 sentence technical diagnosis of what is most likely wrong",
-                  "possibleCauses": ["Most likely cause", "Second possible cause", "Third possible cause"],
-                  "estimatedCost": "Realistic INR range for parts + labour e.g. ₹800 - ₹1500",
-                  "estimatedTime": "Realistic repair duration e.g. 1-2 hours",
-                  "recommendedService": "The exact service category needed e.g. AC Repair, Mobile Screen Replacement",
-                  "urgency": "Low or Medium or High",
-                  "urgencyReason": "One sentence explaining why this urgency level was assigned",
-                  "customerAdvice": "One practical thing the customer can do right now before the technician arrives"
-                }
-            """.trimIndent()
+STRICT OUTPUT RULES:
+- Return ONLY a valid JSON object
+- No markdown, no code blocks, no explanation, no preamble
+- All strings must be properly escaped
+- possibleCauses must have EXACTLY 3 items — ordered most likely to least likely
+- estimatedCost must be a specific INR range, not a vague number
+- estimatedTime must account for parts availability (e.g. "2-3 hours (same day if parts available)" or "1-2 days (if display needs to be ordered)")
+
+{
+  "diagnosis": "A precise 1-2 sentence technical diagnosis naming the specific component or failure mode most likely responsible",
+  "possibleCauses": [
+    "Most likely cause with brief technical reasoning",
+    "Second possible cause with brief technical reasoning",
+    "Third possible cause with brief technical reasoning"
+  ],
+  "estimatedCost": "₹X,XXX – ₹X,XXX (parts + labour, inclusive of GST)",
+  "estimatedTime": "X hours / X days (with parts availability note if relevant)",
+  "recommendedService": "Specific service name matching the Servify+ category e.g. Smartphone Screen Replacement / AC Gas Refill / Washing Machine PCB Repair",
+  "urgency": "Low or Medium or High",
+  "urgencyReason": "One sentence — the specific reason this urgency level was assigned, referencing the customer's actual symptom",
+  "customerAdvice": "One specific, actionable thing to do RIGHT NOW — safety-first if High urgency"
+}
+""".trimIndent()
 
             val inputContent = content {
                 text(prompt)

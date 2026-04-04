@@ -391,8 +391,7 @@ fun VendorSelectionStep(
                 )
             }
         } else if (aiDiagnosis != null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            DiagnosisSummaryChip(diagnosis = aiDiagnosis)
+            // Moved to LazyColumn to show full DiagnosisResultCard
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -409,6 +408,12 @@ fun VendorSelectionStep(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
+                if (aiDiagnosis != null && !isLoadingDiagnosis) {
+                    item {
+                        DiagnosisResultCard(diagnosis = aiDiagnosis)
+                    }
+                }
+
                 if (vendors.isEmpty()) {
                     item {
                         Text(
