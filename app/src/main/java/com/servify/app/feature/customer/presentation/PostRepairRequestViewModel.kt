@@ -71,6 +71,24 @@ class PostRepairRequestViewModel @Inject constructor(
         it.copy(currentStep = (it.currentStep - 1).coerceAtLeast(1))
     }
 
+    fun initFromCategory(category: String?) {
+        if (category == null || category == "More") {
+            // Keep Step 1 logic
+            return
+        }
+        // If we haven't advanced yet, immediately jump to step 2 with the selected category
+        val current = _uiState.value
+        if (current.currentStep <= 1 && current.deviceType.isBlank()) {
+            _uiState.update {
+                it.copy(
+                    deviceType = category,
+                    currentStep = 2,
+                    completedSteps = setOf(1)
+                )
+            }
+        }
+    }
+
     fun isCurrentStepValid(): Boolean {
         val s = _uiState.value
         return when (s.currentStep) {

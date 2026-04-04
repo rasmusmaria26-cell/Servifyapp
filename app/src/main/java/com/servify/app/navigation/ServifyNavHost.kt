@@ -418,8 +418,17 @@ fun ServifyNavHost(
             )
         }
 
-        composable(ServifyRoutes.POST_REPAIR_REQUEST) {
+        composable(
+            route = ServifyRoutes.POST_REPAIR_REQUEST,
+            arguments = listOf(navArgument("category") { 
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category")
             PostRepairRequestScreen(
+                initialCategory = category,
                 onNavigateBack = { navController.popBackStack() },
                 onSubmitted    = { requestId ->
                     navController.navigate(ServifyRoutes.quotes(requestId)) {

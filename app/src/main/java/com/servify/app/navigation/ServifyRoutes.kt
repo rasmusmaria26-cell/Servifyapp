@@ -24,7 +24,9 @@ object ServifyRoutes {
     
     const val CREATE_BOOKING      = "create_booking"
     const val BOOKING_DETAIL      = "booking_detail/{bookingId}"
-    const val POST_REPAIR_REQUEST = "post_repair_request"
+    const val POST_REPAIR_REQUEST = "post_repair_request?category={category}"
+    fun postRepairRequest(category: String? = null) = 
+        if (category != null) "post_repair_request?category=$category" else "post_repair_request"
     const val QUOTES              = "quotes/{requestId}"
     const val ACTIVE_REPAIR       = "active_repair/{requestId}"
     fun bookingDetail(bookingId: String)      = "booking_detail/$bookingId"

@@ -4,17 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,10 +35,53 @@ val devices = listOf(
 
 @Composable
 fun StepOneContent(
+    categoryFilter: String? = null,
     selectedDeviceType: String,
     onDeviceTypeSelected: (String) -> Unit,
     onNext: () -> Unit
 ) {
+    val displayDevices = androidx.compose.runtime.remember(categoryFilter) {
+        when (categoryFilter) {
+            "Electronics" -> listOf(
+                DeviceOption("Smartphone",     "📱", Color(0xFFEFF6FF)),
+                DeviceOption("Laptop",         "💻", Color(0xFFEFF6FF)),
+                DeviceOption("Smartwatch",     "⌚", Color(0xFFEFF6FF)),
+                DeviceOption("Tablet",         "📱", Color(0xFFEFF6FF)),
+                DeviceOption("TV",             "📺", Color(0xFFEFF6FF)),
+                DeviceOption("Other",          "➕", Color(0xFFF8FAFC))
+            )
+            "Electrical" -> listOf(
+                DeviceOption("Wiring",         "🔌", Color(0xFFFFFBEB)),
+                DeviceOption("Switchboard",    "🔘", Color(0xFFFFFBEB)),
+                DeviceOption("Ceiling Fan",    "🚁", Color(0xFFFFFBEB)),
+                DeviceOption("Main Panel",     "⚡", Color(0xFFFFFBEB)),
+                DeviceOption("Other",          "➕", Color(0xFFF8FAFC))
+            )
+            "Plumbing" -> listOf(
+                DeviceOption("Faucet",         "🚰", Color(0xFFF0FDF4)),
+                DeviceOption("Toilet",         "🚽", Color(0xFFF0FDF4)),
+                DeviceOption("Pipe Leakage",   "🔧", Color(0xFFF0FDF4)),
+                DeviceOption("Sink",           "🚰", Color(0xFFF0FDF4)),
+                DeviceOption("Other",          "➕", Color(0xFFF8FAFC))
+            )
+            "AC / HVAC" -> listOf(
+                DeviceOption("Split AC",       "❄️", Color(0xFFFFFBEB)),
+                DeviceOption("Window AC",      "❄️", Color(0xFFFFFBEB)),
+                DeviceOption("Central AC",     "❄️", Color(0xFFFFFBEB)),
+                DeviceOption("Heating",        "🔥", Color(0xFFFFFBEB)),
+                DeviceOption("Other",          "➕", Color(0xFFF8FAFC))
+            )
+            "Carpentry" -> listOf(
+                DeviceOption("Furniture",      "🪑", Color(0xFFFAF5FF)),
+                DeviceOption("Doors",          "🚪", Color(0xFFFAF5FF)),
+                DeviceOption("Cabinets",       "🗄️", Color(0xFFFAF5FF)),
+                DeviceOption("General Repair", "🪵", Color(0xFFFAF5FF)),
+                DeviceOption("Other",          "➕", Color(0xFFF8FAFC))
+            )
+            else -> devices
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "What needs to be fixed?",
@@ -48,53 +90,25 @@ fun StepOneContent(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.heightIn(max = 400.dp)
+        @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(devices) { device ->
+            displayDevices.forEach { device ->
                 val isSelected = selectedDeviceType == device.name
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) Color(0xFFE6F1FB) else MaterialTheme.colorScheme.surface)
-                        .border(
-                            width = if (isSelected) 1.5.dp else 0.5.dp,
-                            color = if (isSelected) Color(0xFF378ADD) else MaterialTheme.colorScheme.outlineVariant,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .clickable { onDeviceTypeSelected(device.name) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(device.tint),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = device.emoji, fontSize = 16.sp)
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = device.name,
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
-                }
+                SuggestionChip(
+                    onClick = { onDeviceTypeSelected(device.name) },
+                    label = { Text("${device.emoji}  ${device.name}", color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface) },
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = if (isSelected) Color(0xFF378ADD) else MaterialTheme.colorScheme.surface
+                    ),
+                    border = BorderStroke(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant)
+                )
             }
         }
+                
         
         Spacer(modifier = Modifier.height(24.dp))
         

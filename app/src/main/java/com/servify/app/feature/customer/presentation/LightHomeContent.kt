@@ -41,7 +41,7 @@ val BadgeGreenText = Color(0xFF065F46)
 fun LightHomeContent(
     uiState: CustomerDashboardUiState,
     onNavigateToBooking: () -> Unit,
-    onNavigateToRepairRequest: () -> Unit,
+    onNavigateToRepairRequest: (String?) -> Unit,
     onNavigateToQuotes: (String) -> Unit,
     onNavigateToActiveRepair: (String) -> Unit
 ) {
@@ -168,7 +168,7 @@ fun LightHomeContent(
                                 fontWeight = FontWeight.Bold,
                                 color = ServifyBlue,
                                 fontFamily = Inter,
-                                modifier = Modifier.clickable { onNavigateToRepairRequest() }
+                                modifier = Modifier.clickable { onNavigateToRepairRequest(null) }
                             )
                         }
                     }
@@ -208,31 +208,18 @@ fun LightHomeContent(
                 
                 // Grid of 6 categories
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CatTile("📱", "Electronics", Color(0xFFEFF6FF), Modifier.weight(1f))
-                    CatTile("⚡", "Electrical", Color(0xFFFFFBEB), Modifier.weight(1f))
-                    CatTile("🔧", "Plumbing", Color(0xFFF0FDF4), Modifier.weight(1f))
+                    CatTile("📱", "Electronics", Color(0xFFEFF6FF), Modifier.weight(1f)) { onNavigateToRepairRequest("Electronics") }
+                    CatTile("⚡", "Electrical", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToRepairRequest("Electrical") }
+                    CatTile("🔧", "Plumbing", Color(0xFFF0FDF4), Modifier.weight(1f)) { onNavigateToRepairRequest("Plumbing") }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CatTile("❄️", "AC / HVAC", Color(0xFFFFFBEB), Modifier.weight(1f))
-                    CatTile("🪵", "Carpentry", Color(0xFFFAF5FF), Modifier.weight(1f))
-                    CatTile("➕", "More", Color(0xFFF8FAFC), Modifier.weight(1f))
+                    CatTile("❄️", "AC / HVAC", Color(0xFFFFFBEB), Modifier.weight(1f)) { onNavigateToRepairRequest("AC / HVAC") }
+                    CatTile("🪵", "Carpentry", Color(0xFFFAF5FF), Modifier.weight(1f)) { onNavigateToRepairRequest("Carpentry") }
+                    CatTile("➕", "More", Color(0xFFF8FAFC), Modifier.weight(1f)) { onNavigateToRepairRequest("More") }
                 }
                 
                 Spacer(modifier = Modifier.height(20.dp))
-                
-                // FAB Button inside the list for easier scrolling
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(ServifyBlue)
-                        .clickable { onNavigateToRepairRequest() }
-                        .padding(14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("+ Post repair request", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, fontFamily = Inter)
-                }
             }
         }
     }
@@ -313,13 +300,13 @@ fun ActiveCard(
 }
 
 @Composable
-fun CatTile(emoji: String, name: String, bgTint: Color, modifier: Modifier = Modifier) {
+fun CatTile(emoji: String, name: String, bgTint: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
             .background(Color.White)
             .border(0.5.dp, BorderLight, RoundedCornerShape(14.dp))
-            .clickable { /* no-op logic */ }
+            .clickable { onClick() }
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {

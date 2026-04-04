@@ -11,12 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.servify.app.designsystem.ServifyButton
 import androidx.compose.ui.text.font.FontWeight
 
-val ISSUE_CATEGORIES_LIST = listOf(
-    "Screen / Display", "Battery", "Charging Port",
-    "Software / OS Crash", "Water Damage", "Speaker / Mic",
-    "Keyboard / Trackpad", "Cooling / Fan", "Power (Won't turn on)",
-    "Camera", "Other"
-)
+// Replaced by dynamic calculation
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -27,6 +22,37 @@ fun StepTwoContent(
     onNext: () -> Unit,
     onBack: () -> Unit
 ) {
+    val issueCategories = androidx.compose.runtime.remember(selectedDeviceType) {
+        when (selectedDeviceType) {
+            "Electronics", "Smartphone", "Laptop", "Tablet", "Smartwatch", "TV", "Gaming Console", "Headphones" -> listOf(
+                "Screen / Display", "Battery", "Charging Port",
+                "Software / OS Crash", "Water Damage", "Speaker / Mic",
+                "Keyboard / Trackpad", "Cooling / Fan", "Power (Won't turn on)",
+                "Camera", "Other"
+            )
+            "Plumbing", "Faucet", "Toilet", "Pipe Leakage", "Sink", "Washing Machine" -> listOf(
+                "Clogged Drain", "Pipe Leakage", "Dripping Faucet", "Installation",
+                "Water Heater Issue", "Low Water Pressure", "Toilet Running", "Other"
+            )
+            "Electrical", "Wiring", "Switchboard", "Ceiling Fan", "Main Panel" -> listOf(
+                "Power Outage", "Flickering Lights", "Tripped Breaker", "Installation",
+                "Appliance Repair", "Wiring Issue", "Switchboard / Socket", "Other"
+            )
+            "AC / HVAC", "AC", "Split AC", "Window AC", "Central AC", "Heating", "Refrigerator" -> listOf(
+                "Not Cooling", "Gas Leak", "Making Noise", "Installation",
+                "Water Leaking", "Bad Odor", "General Service", "Other"
+            )
+            "Carpentry", "Furniture", "Doors", "Cabinets", "General Repair" -> listOf(
+                "Furniture Assembly", "Door / Window Repair", "Lock Installation",
+                "Wood Polishing", "Squeaky Hinges", "Custom Woodwork", "Other"
+            )
+            else -> listOf(
+                "General Service", "Diagnosis", "Repair", "Installation",
+                "Maintenance", "Other"
+            )
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         // Green chip showing completed step 1 answer
         AssistChip(
@@ -53,7 +79,7 @@ fun StepTwoContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ISSUE_CATEGORIES_LIST.forEach { category ->
+            issueCategories.forEach { category ->
                 val isSelected = selectedIssueCategory == category
                 SuggestionChip(
                     onClick = { onIssueCategorySelected(category) },

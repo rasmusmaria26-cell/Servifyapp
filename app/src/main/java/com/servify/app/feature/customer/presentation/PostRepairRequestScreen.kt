@@ -3,6 +3,8 @@ package com.servify.app.feature.customer.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -19,11 +21,16 @@ import com.servify.app.designsystem.theme.SpaceGrotesk
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostRepairRequestScreen(
+    initialCategory: String? = null,
     viewModel: PostRepairRequestViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onSubmitted: (requestId: String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(initialCategory) {
+        viewModel.initFromCategory(initialCategory)
+    }
 
     // Handle back press — go to previous step instead of exiting
     BackHandler(enabled = uiState.currentStep > 1) {
@@ -55,7 +62,13 @@ fun PostRepairRequestScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(horizontal = 20.dp)) {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier
+            .padding(padding)
+            .padding(horizontal = 20.dp)
+            .imePadding()
+            .verticalScroll(scrollState)
+        ) {
 
             StepProgressIndicator(
                 totalSteps = 3,
@@ -78,6 +91,7 @@ fun PostRepairRequestScreen(
             ) { step ->
                 when (step) {
                     1 -> StepOneContent(
+                        categoryFilter = initialCategory,
                         selectedDeviceType = uiState.deviceType,
                         onDeviceTypeSelected = viewModel::onDeviceType,
                         onNext = { if (viewModel.isCurrentStepValid()) viewModel.nextStep() }

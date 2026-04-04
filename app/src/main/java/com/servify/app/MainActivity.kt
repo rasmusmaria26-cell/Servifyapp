@@ -40,10 +40,13 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                val showBottomBar = currentRoute !in listOf(
-                    ServifyRoutes.SPLASH,
-                    ServifyRoutes.LOGIN,
-                    ServifyRoutes.SIGNUP
+                val showBottomBar = currentRoute in listOf(
+                    ServifyRoutes.CUSTOMER_HOME,
+                    ServifyRoutes.CUSTOMER_ORDERS,
+                    ServifyRoutes.CUSTOMER_REPAIRS,
+                    ServifyRoutes.CUSTOMER_PROFILE,
+                    ServifyRoutes.HOME,
+                    ServifyRoutes.REPAIR_FEED
                 )
 
                 Scaffold(

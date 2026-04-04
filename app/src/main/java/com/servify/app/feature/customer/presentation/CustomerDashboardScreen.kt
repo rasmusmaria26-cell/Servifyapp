@@ -39,7 +39,7 @@ fun CustomerDashboardScreen(
     selectedTab: Int,
     viewModel: CustomerDashboardViewModel = hiltViewModel(),
     onNavigateToBooking: () -> Unit = {},
-    onNavigateToRepairRequest: () -> Unit = {},
+    onNavigateToRepairRequest: (String?) -> Unit = {},
     onNavigateToQuotes: (String) -> Unit = {},
     onNavigateToActiveRepair: (String) -> Unit = {},
     onNavigateToBookingDetail: (String) -> Unit = {},
@@ -86,7 +86,7 @@ fun CustomerDashboardScreen(
                     viewModel = viewModel,
                     onNavigateToQuotes = onNavigateToQuotes,
                     onNavigateToActiveRepair = onNavigateToActiveRepair,
-                    onPostRepair = onNavigateToRepairRequest
+                    onPostRepair = { onNavigateToRepairRequest(null) }
                 )
                 3 -> ProfileScreenContent(viewModel)
             }
@@ -105,7 +105,7 @@ fun CustomerDashboardScreen(
                 exit = scaleOut() + fadeOut()
             ) {
                 FloatingActionButton(
-                    onClick = if (selectedTab == 2) onNavigateToRepairRequest else onNavigateToBooking,
+                    onClick = if (selectedTab == 2) { { onNavigateToRepairRequest(null) } } else onNavigateToBooking,
                     containerColor = MaterialTheme.colorScheme.onBackground, // High-Contrast Premium FAB
                     contentColor = MaterialTheme.colorScheme.background,
                     shape = RoundedCornerShape(18.dp),
