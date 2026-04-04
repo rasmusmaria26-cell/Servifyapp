@@ -18,6 +18,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class PostRepairUiState(
+    val currentStep: Int = 1,        // 1, 2, or 3
+    val completedSteps: Set<Int> = emptySet(),
+    
     // Form fields
     val deviceType: String = "",
     val brand: String = "",
@@ -52,6 +55,31 @@ class PostRepairRequestViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(PostRepairUiState())
     val uiState: StateFlow<PostRepairUiState> = _uiState.asStateFlow()
+
+    fun goToStep(step: Int) = _uiState.update { 
+        it.copy(currentStep = step.coerceIn(1, 3)) 
+    }
+
+    fun nextStep() = _uiState.update {
+        it.copy(
+            currentStep = (it.currentStep + 1).coerceAtMost(3),
+            completedSteps = it.completedSteps + it.currentStep
+        )
+    }
+
+    fun prevStep() = _uiState.update {
+        it.copy(currentStep = (it.currentStep - 1).coerceAtLeast(1))
+    }
+
+    fun isCurrentStepValid(): Boolean {
+        val s = _uiState.value
+        return when (s.currentStep) {
+            1 -> s.deviceType.isNotBlank()
+            2 -> s.issueCategory.isNotBlank()
+            3 -> s.description.isNotBlank()
+            else -> false
+        }
+    }
 
     // ── Form field mutators ───────────────────────────────────────────────
 
