@@ -1,6 +1,7 @@
 package com.servify.app.feature.vendor.presentation
 
 import androidx.compose.animation.core.*
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,6 +30,8 @@ import com.servify.app.designsystem.AmbientGlow
 import com.servify.app.core.UserSession
 import com.servify.app.core.AppMode
 
+import androidx.compose.ui.graphics.Brush
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VendorDashboardScreen(
@@ -46,157 +49,187 @@ fun VendorDashboardScreen(
         if (signedOut) onSignOut()
     }
 
+    // Deep void gradient background
+    val backgroundBrush = remember {
+        Brush.radialGradient(
+            colors = listOf(
+                Color(0xFF1E293B), // Slate 800 core
+                Color(0xFF020617)  // Slate 950 abyss
+            ),
+            radius = 1500f
+        )
+    }
+
     Scaffold(
-        containerColor = DarkBackground,
-        topBar = {
-            TopAppBar(
-                title = {
+        containerColor = Color.Transparent,
+        modifier = Modifier.background(backgroundBrush)
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
+            ) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ── Hero Header ──────────────────────────────────────────────
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Column {
                         Text(
                             text = "Professional Portal",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary,
+                            color = ServifyBlue,
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = uiState.vendor?.businessName ?: "Service Provider",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
+                            color = Color.White,
                             fontFamily = SpaceGrotesk
                         )
                     }
-                },
-                actions = {
-                    // Switch to Customer mode
-                    IconButton(
-                        onClick = { UserSession.switchMode(AppMode.CUSTOMER) },
-                        modifier = Modifier
-                            .background(DarkSurface, CircleShape)
-                            .border(1.dp, DarkBorder, CircleShape)
-                            .size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SwapHoriz,
-                            contentDescription = "Switch to Customer",
-                            tint = ServifyBlue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    // Repair feed shortcut
-                    IconButton(
-                        onClick = onNavigateToRepairFeed,
-                        modifier = Modifier
-                            .background(DarkSurface, CircleShape)
-                            .border(1.dp, DarkBorder, CircleShape)
-                            .size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Build,
-                            contentDescription = "Repair Requests",
-                            tint = ServifyBlue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    // Sign-out
-                    IconButton(
-                        onClick = { viewModel.signOut() },
-                        modifier = Modifier
-                            .background(DarkSurface, CircleShape)
-                            .border(1.dp, DarkBorder, CircleShape)
-                            .size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Sign Out",
-                            tint = ErrorRed,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            // Subtle ambient glow
-            AmbientGlow()
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                    Row {
+                        IconButton(
+                            onClick = { UserSession.switchMode(AppMode.CUSTOMER) },
+                            modifier = Modifier
+                                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                                .size(42.dp)
+                        ) {
+                            Icon(Icons.Default.SwapHoriz, "Switch to Customer", tint = TextSecondary, modifier = Modifier.size(20.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(
+                            onClick = onNavigateToRepairFeed,
+                            modifier = Modifier
+                                .background(ServifyBlue.copy(alpha = 0.15f), CircleShape)
+                                .border(1.dp, ServifyBlue.copy(alpha = 0.3f), CircleShape)
+                                .size(42.dp)
+                        ) {
+                            Icon(Icons.Default.Build, "Repair Requests", tint = ServifyBlue, modifier = Modifier.size(20.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(
+                            onClick = { viewModel.signOut() },
+                            modifier = Modifier
+                                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                                .size(42.dp)
+                        ) {
+                            Icon(Icons.Default.Logout, "Sign Out", tint = ErrorRed.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+                        }
+                    }
+                }
 
-                // Metrics Row
+                Spacer(modifier = Modifier.height(36.dp))
+
+                // ── Earnings & Active Jobs ──────────────────────────────────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    MetricCard(
-                        label = "Total Earnings",
-                        value = "₹${String.format("%.2f", uiState.totalEarnings)}",
-                        modifier = Modifier.weight(1f),
-                        containerColor = DarkSurface,
-                        contentColor = TextPrimary,
-                        accentColor = SuccessGreen
-                    )
-                    MetricCard(
-                        label = "Active Jobs",
-                        value = uiState.bookings.count { it.status == "PENDING" || it.status == "ACCEPTED" }.toString(),
-                        modifier = Modifier.weight(1f),
-                        containerColor = DarkSurface,
-                        contentColor = TextPrimary,
-                        accentColor = ServifyBlue
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Tabs
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = Color.Transparent,
-                    contentColor = TextPrimary,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = ServifyBlue
+                    Column {
+                        Text(
+                            text = "Total Earnings",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontFamily = Inter,
+                            color = TextSecondary
                         )
-                    },
-                    divider = {
-                        HorizontalDivider(color = DarkBorder)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "₹${String.format("%.2f", uiState.totalEarnings)}",
+                            style = MaterialTheme.typography.displayMedium,
+                            fontFamily = SpaceGrotesk,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
-                ) {
-                    Tab(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        text = { Text("Active", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 0) TextPrimary else TextSecondary) }
-                    )
-                    Tab(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        text = { Text("History", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 1) TextPrimary else TextSecondary) }
-                    )
-                    Tab(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        text = { Text("My Jobs", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = if (selectedTab == 2) ServifyBlue else TextSecondary) }
-                    )
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Active Jobs",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = Inter,
+                            color = TextSecondary
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(ServifyBlue.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                                .border(1.dp, ServifyBlue.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = uiState.bookings.count { it.status == "PENDING" || it.status == "ACCEPTED" }.toString(),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontFamily = SpaceGrotesk,
+                                fontWeight = FontWeight.Bold,
+                                color = ServifyBlue
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
+                // ── Segmented Tabs ───────────────────────────────────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val tabs = listOf("Active", "History", "My Jobs")
+                    tabs.forEachIndexed { index, title ->
+                        val isSelected = selectedTab == index
+                        val bgColor by animateColorAsState(if (isSelected) Color.White.copy(alpha = 0.1f) else Color.Transparent)
+                        val textColor by animateColorAsState(if (isSelected) Color.White else TextSecondary)
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .background(bgColor, RoundedCornerShape(20.dp))
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                        selectedTab = index 
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                title,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontFamily = SpaceGrotesk,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = textColor
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ── Lists ────────────────────────────────────────────────────
                 when (selectedTab) {
                     2 -> MyJobsContent()
                     else -> {
-                        // Original bookings list
                         if (uiState.isLoading && uiState.bookings.isEmpty()) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator(color = ServifyBlue)
@@ -226,54 +259,12 @@ fun VendorDashboardScreen(
                                         onNavigateToMap = onNavigateToMap
                                     )
                                 }
-                                item { Spacer(modifier = Modifier.height(16.dp)) }
+                                item { Spacer(modifier = Modifier.height(32.dp)) }
                             }
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun MetricCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    containerColor: Color,
-    contentColor: Color,
-    accentColor: Color
-) {
-    Card(
-        modifier = modifier.height(100.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                color = TextSecondary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = SpaceGrotesk,
-                    fontFeatureSettings = "tnum"
-                ),
-                fontWeight = FontWeight.Bold,
-                color = accentColor
-            )
         }
     }
 }
@@ -305,8 +296,8 @@ fun VendorBookingCard(
                 onClick = { /* Navigate to details */ }
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.03f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -327,8 +318,9 @@ fun VendorBookingCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Surface(
-                color = DarkSurfaceLight,
-                shape = RoundedCornerShape(8.dp)
+                color = Color.White.copy(alpha = 0.03f),
+                shape = RoundedCornerShape(8.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -392,7 +384,8 @@ fun VendorBookingCard(
                             onClick = { onStatusUpdate("CANCELLED") },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed)
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, ErrorRed.copy(alpha = 0.5f))
                         ) {
                             Text("Reject", style = MaterialTheme.typography.labelLarge, fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold)
                         }
@@ -420,8 +413,15 @@ fun StatusBadge(status: String) {
         "PENDING" -> AmberAccent.copy(alpha = 0.15f)
         "ACCEPTED" -> ServifyBlue.copy(alpha = 0.15f)
         "COMPLETED" -> SuccessGreen.copy(alpha = 0.15f)
-        "CANCELLED" -> ErrorRed.copy(alpha = 0.1f)
-        else -> DarkSurfaceLight
+        "CANCELLED" -> ErrorRed.copy(alpha = 0.15f)
+        else -> Color.White.copy(alpha = 0.1f)
+    }
+    val borderColor = when (status) {
+        "PENDING" -> AmberAccent.copy(alpha = 0.4f)
+        "ACCEPTED" -> ServifyBlue.copy(alpha = 0.4f)
+        "COMPLETED" -> SuccessGreen.copy(alpha = 0.4f)
+        "CANCELLED" -> ErrorRed.copy(alpha = 0.4f)
+        else -> Color.White.copy(alpha = 0.2f)
     }
     val textColor = when (status) {
         "PENDING" -> AmberAccent
@@ -433,7 +433,8 @@ fun StatusBadge(status: String) {
 
     Surface(
         color = backgroundColor,
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
     ) {
         Text(
             text = status,

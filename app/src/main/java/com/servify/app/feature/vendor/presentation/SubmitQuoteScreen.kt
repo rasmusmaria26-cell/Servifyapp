@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.shape.CircleShape
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.servify.app.designsystem.ServifyButton
 import com.servify.app.designsystem.theme.*
@@ -48,27 +50,19 @@ fun SubmitQuoteScreen(
         if (quoteState.submitted) onQuoteSubmitted()
     }
 
+    val backgroundBrush = remember {
+        Brush.radialGradient(
+            colors = listOf(
+                Color(0xFF1E293B), // Slate 800 core
+                Color(0xFF020617)  // Slate 950 abyss
+            ),
+            radius = 1500f
+        )
+    }
+
     Scaffold(
-        containerColor = DarkBackground,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Submit Quote", 
-                        style = MaterialTheme.typography.titleLarge,
-                        fontFamily = SpaceGrotesk, 
-                        fontWeight = FontWeight.Bold, 
-                        color = TextPrimary
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = DarkBackground)
-            )
-        }
+        containerColor = Color.Transparent,
+        modifier = Modifier.background(backgroundBrush)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -78,11 +72,34 @@ fun SubmitQuoteScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // ── Request summary card ──────────────────────────────────────
+            // ── Header ──────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                        .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                        .size(42.dp)
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Submit Quote",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
             request?.let { req ->
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = ServifyBlue.copy(alpha = 0.10f)),
-                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = ServifyBlue.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(16.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, ServifyBlue.copy(alpha = 0.3f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -155,7 +172,7 @@ fun SubmitQuoteScreen(
                                 modifier = Modifier
                                     .size(120.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .border(1.dp, DarkBorder, RoundedCornerShape(12.dp)),
+                                    .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
                             )
                         }
@@ -175,7 +192,7 @@ fun SubmitQuoteScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = quoteFieldColors(),
                     shape = RoundedCornerShape(12.dp),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, color = Color.White)
                 )
 
                 Spacer(Modifier.height(4.dp))
@@ -204,16 +221,16 @@ fun SubmitQuoteScreen(
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         colors = quoteFieldColors(),
                         shape = RoundedCornerShape(12.dp),
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = TextPrimary)
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = Color.White)
                     )
                     ExposedDropdownMenu(
                         expanded = dropdownExpanded,
                         onDismissRequest = { dropdownExpanded = false },
-                        modifier = Modifier.background(DarkSurface)
+                        modifier = Modifier.background(Color(0xFF1E293B))
                     ) {
                         ESTIMATE_OPTIONS.forEach { opt ->
                             DropdownMenuItem(
-                                text = { Text(text = opt, style = MaterialTheme.typography.bodyMedium, fontFamily = Inter, color = TextPrimary) },
+                                text = { Text(text = opt, style = MaterialTheme.typography.bodyMedium, fontFamily = Inter, color = Color.White) },
                                 onClick = {
                                     viewModel.onEstimatedTime(opt)
                                     dropdownExpanded = false
@@ -235,7 +252,7 @@ fun SubmitQuoteScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = quoteFieldColors(),
                     shape = RoundedCornerShape(12.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = TextPrimary)
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = Color.White)
                 )
                 Spacer(Modifier.height(12.dp))
 
@@ -243,9 +260,9 @@ fun SubmitQuoteScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DarkSurface)
-                        .border(1.dp, DarkBorder, RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.03f))
+                        .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(14.dp))
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -257,7 +274,7 @@ fun SubmitQuoteScreen(
                             Text(
                                 text = "Pickup Available", 
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextPrimary, 
+                                color = Color.White, 
                                 fontFamily = SpaceGrotesk, 
                                 fontWeight = FontWeight.Bold
                             )
@@ -299,7 +316,7 @@ fun SubmitQuoteScreen(
                     minLines = 3,
                     colors = quoteFieldColors(),
                     shape = RoundedCornerShape(12.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = TextPrimary)
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = Inter, color = Color.White)
                 )
             }
 
@@ -342,11 +359,11 @@ private fun QuoteSection(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        shape = RoundedCornerShape(16.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.03f)),
+        shape = RoundedCornerShape(20.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 14.dp)) {
                 Icon(icon, contentDescription = null, tint = ServifyBlue, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
@@ -366,12 +383,12 @@ private fun QuoteSection(
 @Composable
 private fun quoteFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = ServifyBlue,
-    unfocusedBorderColor = DarkBorder,
-    focusedTextColor = TextPrimary,
-    unfocusedTextColor = TextPrimary,
+    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+    focusedTextColor = Color.White,
+    unfocusedTextColor = Color.White,
     cursorColor = ServifyBlue,
-    focusedContainerColor = DarkSurface,
-    unfocusedContainerColor = DarkSurface,
+    focusedContainerColor = Color.White.copy(alpha = 0.05f),
+    unfocusedContainerColor = Color.White.copy(alpha = 0.03f),
     focusedLabelColor = ServifyBlue,
     unfocusedLabelColor = TextSecondary
 )
