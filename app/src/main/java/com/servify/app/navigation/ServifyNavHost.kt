@@ -34,6 +34,9 @@ import com.servify.app.feature.vendor.presentation.VendorDashboardScreen
 import com.servify.app.feature.customer.presentation.LocationMapScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import android.net.Uri
+import com.servify.app.feature.payment.PaymentScreen
+import com.servify.app.feature.customer.presentation.BookingDetailViewModel
 
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
@@ -392,6 +395,38 @@ fun ServifyNavHost(
             }
         }
 
+        // --- Payment Screen ---
+        composable(
+            route = ServifyRoutes.PAYMENT,
+            arguments = listOf(
+                navArgument("amount") { type = NavType.LongType },
+                navArgument("description") { type = NavType.StringType },
+                navArgument("vendorName") { type = NavType.StringType },
+                navArgument("bookingId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val amount = backStackEntry.arguments?.getLong("amount") ?: 50000L
+            val description = Uri.decode(backStackEntry.arguments?.getString("description") ?: "Service Payment")
+            val vendorName = Uri.decode(backStackEntry.arguments?.getString("vendorName") ?: "Servify Service")
+            val bookingId = Uri.decode(backStackEntry.arguments?.getString("bookingId") ?: "")
+            val bookingDetailViewModel = hiltViewModel<BookingDetailViewModel>()
+
+            PaymentScreen(
+                vendorName = vendorName,
+                amount = amount,
+                description = description,
+                onPaymentComplete = {
+                    if (bookingId.isNotBlank()) {
+                        bookingDetailViewModel.markBookingPaid(bookingId)
+                    }
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("payment_completed", true)
+                    navController.popBackStack()
+                }
+            )
+        }
+
         // --- Customer Screens ---
 
         composable(
@@ -412,17 +447,31 @@ fun ServifyNavHost(
 
         composable(ServifyRoutes.BOOKING_DETAIL) { backStackEntry ->
             val bookingId = backStackEntry.arguments?.getString("bookingId") ?: return@composable
-            val viewModel = hiltViewModel<com.servify.app.feature.customer.presentation.BookingDetailViewModel>()
-            
+            val viewModel = hiltViewModel<BookingDetailViewModel>()
+            val paymentCompleted by backStackEntry.savedStateHandle
+                .getStateFlow("payment_completed", false)
+                .collectAsStateWithLifecycle()
+
             androidx.compose.runtime.LaunchedEffect(bookingId) {
                 viewModel.fetchBooking(bookingId)
             }
-            
+            androidx.compose.runtime.LaunchedEffect(paymentCompleted) {
+                if (paymentCompleted) {
+                    viewModel.fetchBooking(bookingId)
+                    backStackEntry.savedStateHandle["payment_completed"] = false
+                }
+            }
+
             BookingDetailScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToMap = { name, lat, lng ->
                     navController.navigate(ServifyRoutes.locationMap(name, lat, lng))
+                },
+                onNavigateToPayment = { amount, description, vendorName, id ->
+                    navController.navigate(
+                        ServifyRoutes.payment(amount, description, vendorName, id)
+                    )
                 }
             )
         }

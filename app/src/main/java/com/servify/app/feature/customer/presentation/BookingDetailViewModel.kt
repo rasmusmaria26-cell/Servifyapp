@@ -46,6 +46,20 @@ class BookingDetailViewModel @Inject constructor(
                 }
         }
     }
+
+    fun markBookingPaid(bookingId: String) {
+        viewModelScope.launch {
+            bookingRepository.updateBookingStatus(bookingId, "PAID")
+                .onSuccess {
+                    fetchBooking(bookingId)
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(error = "Failed to update payment status: ${error.message}")
+                    }
+                }
+        }
+    }
 }
 
 data class BookingDetailUiState(

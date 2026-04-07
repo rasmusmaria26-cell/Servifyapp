@@ -32,7 +32,8 @@ import com.servify.app.designsystem.theme.*
 fun BookingDetailScreen(
     viewModel: BookingDetailViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToMap: (String, Double, Double) -> Unit = { _, _, _ -> }
+    onNavigateToMap: (String, Double, Double) -> Unit = { _, _, _ -> },
+    onNavigateToPayment: (amount: Long, description: String, vendorName: String, bookingId: String) -> Unit = { _, _, _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val booking = uiState.booking
@@ -274,6 +275,26 @@ fun BookingDetailScreen(
                             )
                         }
                     }
+                }
+
+                // Pay Now button (only shown when not yet paid)
+                if (booking.paymentStatus != "PAID") {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val vendorName = booking.vendorProfile?.fullName ?: booking.vendorDetails?.businessName ?: "Servify Service"
+                    val serviceName = booking.service?.name ?: "Service"
+                    val price = booking.finalPrice ?: booking.estimatedPrice ?: 0
+                    ServifyButton(
+                        text = "Pay Now  ₹$price",
+                        onClick = {
+                            onNavigateToPayment(
+                                price.toLong() * 100L,
+                                "Payment for $serviceName",
+                                vendorName,
+                                booking.id
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
 
                 // AI Diagnosis (if available)
