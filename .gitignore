@@ -1,22 +1,57 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ── Credentials ────────────────────────────────────────────────────────────────
 local.properties
 
-# GSD & Logs
-.gsd/
-*.txt
-build_logs/
-.gemini/
+# ── Android Build ───────────────────────────────────────────────────────────────
+*.iml
+.gradle/
+/build/
+/app/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.class
+
+# ── IDE ─────────────────────────────────────────────────────────────────────────
+.idea/
+*.iws
+*.ipr
+.DS_Store
+
+# ── Kotlin ──────────────────────────────────────────────────────────────────────
 .kotlin/
+
+# ── Logs ────────────────────────────────────────────────────────────────────────
+*.log
+build_logs/
+
+# ── GSD / AI Agent Template Files ──────────────────────────────────────────────
+.agent/
+.gsd/
+.gemini/
+gsd-template/
+adapters/
+GSD-STYLE.md
+PROJECT_RULES.md
+SKILL.md
+model_capabilities.yaml
+docs/model-selection-playbook.md
+docs/token-optimization-guide.md
+docs/runbook.md
+scripts/search_repo.ps1
+scripts/search_repo.sh
+scripts/setup_search.ps1
+scripts/setup_search.sh
+scripts/validate-all.ps1
+scripts/validate-all.sh
+scripts/validate-skills.ps1
+scripts/validate-skills.sh
+scripts/validate-templates.ps1
+scripts/validate-templates.sh
+scripts/validate-workflows.ps1
+scripts/validate-workflows.sh
+
+# ── Boilerplate Test Stubs ──────────────────────────────────────────────────────
+app/src/test/java/com/servify/app/ExampleUnitTest.kt
+app/src/androidTest/java/com/servify/app/ExampleInstrumentedTest.kt
