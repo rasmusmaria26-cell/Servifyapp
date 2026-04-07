@@ -31,6 +31,7 @@ import com.servify.app.feature.vendor.presentation.RepairFeedScreen
 import com.servify.app.feature.vendor.presentation.RepairFeedViewModel
 import com.servify.app.feature.vendor.presentation.SubmitQuoteScreen
 import com.servify.app.feature.vendor.presentation.VendorDashboardScreen
+import com.servify.app.feature.vendor.presentation.VendorBookingDetailScreen
 import com.servify.app.feature.customer.presentation.LocationMapScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -382,6 +383,7 @@ fun ServifyNavHost(
             if (role.equals("vendor", ignoreCase = true)) {
                 VendorDashboardScreen(
                     onNavigateToRepairFeed = { navController.navigate(ServifyRoutes.REPAIR_FEED) },
+                    onNavigateToBookingDetail = { id -> navController.navigate(ServifyRoutes.vendorBookingDetail(id)) },
                     onSignOut = {
                         navController.navigate(ServifyRoutes.LOGIN) { popUpTo(0) { inclusive = true } }
                     },
@@ -424,6 +426,15 @@ fun ServifyNavHost(
                         ?.set("payment_completed", true)
                     navController.popBackStack()
                 }
+            )
+        }
+
+        // --- Vendor Additional Screens ---
+        composable(ServifyRoutes.VENDOR_BOOKING_DETAIL) { backStackEntry ->
+            val bookingId = backStackEntry.arguments?.getString("bookingId") ?: return@composable
+            VendorBookingDetailScreen(
+                bookingId = bookingId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

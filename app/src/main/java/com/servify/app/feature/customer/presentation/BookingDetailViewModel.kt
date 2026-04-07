@@ -20,16 +20,19 @@ class BookingDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BookingDetailUiState())
     val uiState: StateFlow<BookingDetailUiState> = _uiState.asStateFlow()
 
+    private var observeJob: kotlinx.coroutines.Job? = null
+
     fun fetchBooking(bookingId: String) {
-        viewModelScope.launch {
+        observeJob?.cancel()
+        observeJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            bookingRepository.getBookingById(bookingId)
-                .onSuccess { booking ->
+            try {
+                bookingRepository.observeBooking(bookingId).collect { booking ->
                     _uiState.update { it.copy(isLoading = false, booking = booking) }
                 }
-                .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, error = error.message ?: "Failed to load booking") }
-                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load booking: ${e.message}") }
+            }
         }
     }
 
@@ -49,7 +52,7 @@ class BookingDetailViewModel @Inject constructor(
 
     fun markBookingPaid(bookingId: String) {
         viewModelScope.launch {
-            bookingRepository.updateBookingStatus(bookingId, "PAID")
+            bookingRepository.confirmBookingPayment(bookingId)
                 .onSuccess {
                     fetchBooking(bookingId)
                 }

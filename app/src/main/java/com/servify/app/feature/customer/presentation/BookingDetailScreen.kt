@@ -277,12 +277,46 @@ fun BookingDetailScreen(
                     }
                 }
 
-                // Pay Now button (only shown when not yet paid)
-                if (booking.paymentStatus != "PAID") {
-                    Spacer(modifier = Modifier.height(8.dp))
+                // Action logic based on status
+                if (booking.status == "PRICE_PROPOSED" && booking.paymentStatus != "PAID") {
+                    Spacer(modifier = Modifier.height(16.dp))
                     val vendorName = booking.vendorProfile?.fullName ?: booking.vendorDetails?.businessName ?: "Servify Service"
                     val serviceName = booking.service?.name ?: "Service"
-                    val price = booking.finalPrice ?: booking.estimatedPrice ?: 0
+                    val price = booking.finalPrice ?: 0.0
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(ServifyBlue.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.LocalOffer, contentDescription = null, tint = ServifyBlue, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("New Price Proposed", style = MaterialTheme.typography.titleSmall, color = ServifyBlue, fontWeight = FontWeight.Bold)
+                            Text("The vendor has set the final price to ₹$price.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    ServifyButton(
+                        text = "Accept & Pay  ₹$price",
+                        onClick = {
+                            onNavigateToPayment(
+                                price.toLong() * 100L,
+                                "Payment for $serviceName",
+                                vendorName,
+                                booking.id
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else if (booking.status == "ACCEPTED" && booking.paymentStatus != "PAID") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val vendorName = booking.vendorProfile?.fullName ?: booking.vendorDetails?.businessName ?: "Servify Service"
+                    val serviceName = booking.service?.name ?: "Service"
+                    val price = booking.finalPrice ?: booking.estimatedPrice ?: 0.0
                     ServifyButton(
                         text = "Pay Now  ₹$price",
                         onClick = {
@@ -295,6 +329,9 @@ fun BookingDetailScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
+                } else if (booking.status == "PENDING") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Waiting for vendor to review and propose a final price.", color = TextSecondary, style = MaterialTheme.typography.bodyMedium, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
                 }
 
                 // AI Diagnosis (if available)
